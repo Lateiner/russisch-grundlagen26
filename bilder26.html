@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Bild-Zuordnung mit Emojis</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --zone-bg: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .exercise-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* --- DRAGGABLE ITEMS (VERBEN POOL) --- */
+        .source-container {
+            background-color: #e8ecef;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .draggable {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 20px;
+            cursor: grab;
+            user-select: none;
+            font-weight: bold;
+            font-size: 1em;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s, background-color 0.2s;
+            z-index: 10;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        /* --- BILDER GRID (EMOJIS) --- */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* Desktop: 4 Spalten */
+            gap: 20px;
+        }
+
+        .image-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .emoji-display {
+            width: 100%;
+            height: 120px;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4em; /* Große Emojis */
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-body {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .scenario-text {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #7f8c8d;
+            height: 40px; /* Fixe Höhe für Einheitlichkeit */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+        }
+
+        /* --- DROP ZONES --- */
+        .drop-zone {
+            width: 100%;
+            height: 50px;
+            background-color: var(--zone-bg);
+            border: 2px dashed #bdc3c7;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            background-color: #d6eaf8;
+            border-color: var(--primary-color);
+        }
+
+        /* FEEDBACK STYLES */
+        .draggable.correct {
+            background-color: var(--success-color) !important;
+        }
+        .draggable.incorrect {
+            background-color: var(--error-color) !important;
+        }
+
+        .feedback-msg {
+            text-align: center;
+            margin-top: 25px;
+            font-weight: bold;
+            min-height: 24px;
+            font-size: 1.1em;
+        }
+
+        /* CONTROLS */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            color: white;
+            min-width: 140px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-check { background-color: var(--primary-color); }
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: #f39c12; }
+        button:hover { opacity: 0.9; }
+
+        /* --- RESPONSIVE MEDIA QUERIES --- */
+        
+        /* Tablet (unter 900px) -> 2 Spalten */
+        @media (max-width: 900px) {
+            .image-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Mobile (unter 600px) -> 1 Spalte */
+        @media (max-width: 600px) {
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .source-container {
+                min-height: 100px;
+            }
+            
+            h1 { font-size: 1.5em; }
+
+            .draggable {
+                font-size: 0.9em;
+                padding: 8px 12px;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Verben-Zuordnung mit Emojis</h1>
+    <p class="instruction">
+        Ziehen Sie das passende russische Verb zum Emoji und der Beschreibung.
+    </p>
+
+    <div class="exercise-card">
+        
+        <!-- QUELLE: Die Verben -->
+        <div class="source-container" id="verb-pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <!-- Wird per JS gefüllt -->
+        </div>
+
+        <!-- ZIEL: Die Bilder (Grid) -->
+        <div class="image-grid" id="image-grid">
+            <!-- Wird per JS gefüllt -->
+        </div>
+
+        <div class="feedback-msg" id="feedback"></div>
+
+        <div class="controls">
+            <button class="btn-check" onclick="checkAnswers()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetExercise()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DATENKONFIGURATION (8 BEISPIELE)
+    const scenarios = [
+        // 1. Учиться (Wo? / Prozess)
+        {
+            id: "s1",
+            verb: "учиться",
+            emoji: "🏫",
+            desc: "In der Schule lernen (Wo?)"
+        },
+        {
+            id: "s2",
+            verb: "учиться",
+            emoji: "🎓",
+            desc: "An der Uni studieren (Wo?)"
+        },
+        // 2. Учить (Memorieren / Was?)
+        {
+            id: "s3",
+            verb: "учить",
+            emoji: "📝",
+            desc: "Vokabeln pauken (Was?)"
+        },
+        {
+            id: "s4",
+            verb: "учить",
+            emoji: "📜",
+            desc: "Ein Gedicht auswendig lernen"
+        },
+        // 3. Изучать (Tiefgehend / Wissenschaft)
+        {
+            id: "s5",
+            verb: "изучать",
+            emoji: "🔬",
+            desc: "Biologie erforschen (Wissenschaft)"
+        },
+        {
+            id: "s6",
+            verb: "изучать",
+            emoji: "🗺️",
+            desc: "Geschichte studieren (tiefgehend)"
+        },
+        // 4. Заниматься (Üben / Tun / Womit?)
+        {
+            id: "s7",
+            verb: "заниматься",
+            emoji: "⚽",
+            desc: "Sport treiben"
+        },
+        {
+            id: "s8",
+            verb: "заниматься",
+            emoji: "🏠",
+            desc: "Zu Hause Hausaufgaben machen"
+        }
+    ];
+
+    // INIT
+    window.onload = function() {
+        initGame();
+    };
+
+    function initGame() {
+        const pool = document.getElementById('verb-pool');
+        const grid = document.getElementById('image-grid');
+        const feedback = document.getElementById('feedback');
+
+        pool.innerHTML = '';
+        grid.innerHTML = '';
+        feedback.textContent = '';
+        feedback.className = 'feedback-msg';
+
+        // 1. Grid erstellen (Szenarien)
+        scenarios.forEach(scene => {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            
+            // HTML Struktur der Karte
+            card.innerHTML = `
+                <div class="emoji-display">${scene.emoji}</div>
+                <div class="card-body">
+                    <div class="scenario-text">${scene.desc}</div>
+                    <div class="drop-zone" id="zone-${scene.id}" data-correct-verb="${scene.verb}" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        // 2. Verben erstellen und mischen
+        const shuffledScenarios = [...scenarios].sort(() => 0.5 - Math.random());
+        
+        shuffledScenarios.forEach((scene, index) => {
+            const draggable = document.createElement('div');
+            draggable.className = 'draggable';
+            draggable.id = `verb-${index}`; // Einzigartige ID für jedes Kärtchen
+            draggable.textContent = scene.verb;
+            draggable.draggable = true;
+            // Wir speichern das Wort im Dataset für den Vergleich
+            draggable.dataset.verbWord = scene.verb; 
+            
+            draggable.addEventListener('dragstart', drag);
+            pool.appendChild(draggable);
+        });
+    }
+
+    /* --- DRAG & DROP LOGIK --- */
+    
+    function allowDrop(ev) {
+        ev.preventDefault();
+        // Visuelles Highlight
+        if(ev.target.classList.contains('drop-zone') || ev.target.id === 'verb-pool') {
+            ev.dataTransfer.dropEffect = "move";
+        }
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+        ev.target.style.opacity = '0.5';
+    }
+
+    document.addEventListener('dragend', function(e) {
+        e.target.style.opacity = '1';
+        document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+    });
+
+    document.addEventListener('dragenter', function(e) {
+        if (e.target.classList.contains('drop-zone')) {
+            e.target.classList.add('drag-over');
+        }
+    });
+    
+    document.addEventListener('dragleave', function(e) {
+        if (e.target.classList.contains('drop-zone')) {
+            e.target.classList.remove('drag-over');
+        }
+    });
+
+    function drop(ev) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const draggedEl = document.getElementById(data);
+        
+        let target = ev.target;
+        
+        // Falls auf ein bereits liegendes Item gedroppt wird
+        if (target.classList.contains('draggable')) {
+            target = target.parentNode;
+        }
+
+        // Sicherheitscheck
+        if (!target.classList.contains('drop-zone') && target.id !== 'verb-pool') {
+            return;
+        }
+
+        target.classList.remove('drag-over');
+
+        // Logik: Ein Feld = Ein Verb. Altes Element fliegt zurück in Pool.
+        if (target.classList.contains('drop-zone')) {
+            if (target.children.length > 0) {
+                const oldChild = target.children[0];
+                document.getElementById('verb-pool').appendChild(oldChild);
+                oldChild.classList.remove('correct', 'incorrect');
+            }
+        }
+
+        target.appendChild(draggedEl);
+        draggedEl.classList.remove('correct', 'incorrect');
+    }
+
+    /* --- STEUERUNG --- */
+
+    function checkAnswers() {
+        const dropZones = document.querySelectorAll('.drop-zone');
+        let correctCount = 0;
+        let filledCount = 0;
+
+        dropZones.forEach(zone => {
+            if (zone.children.length > 0) {
+                filledCount++;
+                const item = zone.children[0];
+                const itemVerb = item.dataset.verbWord;
+                const correctVerb = zone.dataset.correctVerb;
+
+                if (itemVerb === correctVerb) {
+                    item.classList.add('correct');
+                    item.classList.remove('incorrect');
+                    correctCount++;
+                } else {
+                    item.classList.add('incorrect');
+                    item.classList.remove('correct');
+                }
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        
+        if (filledCount < scenarios.length) {
+            feedback.textContent = `Bitte ordnen Sie alle ${scenarios.length} Verben zu.`;
+            feedback.style.color = "var(--secondary-color)";
+        } else if (correctCount === scenarios.length) {
+            feedback.textContent = "Hervorragend! Alle 8 Beispiele richtig erkannt.";
+            feedback.style.color = "var(--success-color)";
+        } else {
+            feedback.textContent = `Sie haben ${correctCount} von ${scenarios.length} richtig.`;
+            feedback.style.color = "var(--error-color)";
+        }
+    }
+
+    function resetExercise() {
+        initGame();
+    }
+
+    function showSolution() {
+        // Wir setzen die Übung zurück, um einen sauberen Zustand zu haben
+        // aber wir dürfen die Verben nicht neu mischen, sonst finden wir sie nicht einfach.
+        // Besser: Wir iterieren durch die Zonen und holen uns das passende Verb aus dem Pool oder anderen Zonen.
+        
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "Lösung angezeigt.";
+        feedback.style.color = "var(--primary-color)";
+
+        // Alle Draggables sammeln
+        const allDraggables = Array.from(document.querySelectorAll('.draggable'));
+        const zones = document.querySelectorAll('.drop-zone');
+
+        // Für jede Zone das passende Verb finden
+        zones.forEach(zone => {
+            const neededVerb = zone.dataset.correctVerb;
+            
+            // Finde ein Draggable, das diesen Text hat UND noch nicht 'placed' (als korrekt markiert) ist,
+            // ODER nimm einfach irgendeines mit dem Text, wir sortieren eh alles neu.
+            
+            // Um es einfach zu machen: Wir leeren alle Zonen erst visuell
+        });
+
+        // Einfacherer Weg für "Lösung anzeigen":
+        // 1. Alles in den Pool werfen (virtuell)
+        // 2. Dann gezielt verteilen.
+        
+        // Alle zurück in Pool, Markierungen weg
+        const pool = document.getElementById('verb-pool');
+        allDraggables.forEach(d => {
+            pool.appendChild(d);
+            d.classList.remove('correct', 'incorrect');
+        });
+
+        // Jetzt verteilen
+        zones.forEach(zone => {
+            const neededVerb = zone.dataset.correctVerb;
+            // Suche erstes verfügbares Verb im Pool
+            const match = Array.from(pool.children).find(d => d.textContent === neededVerb);
+            if(match) {
+                zone.appendChild(match);
+                match.classList.add('correct');
+            }
+        });
+    }
+
+</script>
+
+</body>
+</html>
