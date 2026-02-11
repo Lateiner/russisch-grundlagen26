@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Spiel: Der Spion</title>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* Agenten-Blau */
+            --accent-color: #e74c3c; /* Alarm-Rot für den Spion */
+            --success-color: #27ae60;
+            --bg-color: #ecf0f1;
+            --card-bg: #ffffff;
+            --text-color: #34495e;
+            --highlight: #f1c40f;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: transparent;
+        }
+
+        /* --- HEADER --- */
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 2em;
+        }
+        
+        .icon-spy {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            font-size: 1.1em;
+            color: #7f8c8d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- PROGRESS BAR --- */
+        .progress-container {
+            background-color: #bdc3c7;
+            border-radius: 10px;
+            height: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background-color: var(--primary-color);
+            height: 100%;
+            width: 0%; /* Wird per JS gesteuert */
+            transition: width 0.3s ease;
+        }
+
+        .round-indicator {
+            text-align: right;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        /* --- GAME AREA --- */
+        .game-area {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Das Raster für die 4 Sätze */
+        .sentence-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Desktop: 2x2 */
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sentence-card {
+            background-color: #f8f9fa;
+            border: 2px solid #dfe6e9;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 80px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .sentence-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
+
+        /* States */
+        .sentence-card.found-spy {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            animation: shake 0.5s;
+        }
+        
+        .sentence-card.found-spy::after {
+            content: "🕵️ SPION!";
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #fff;
+            color: #000;
+            font-size: 0.8em;
+            padding: 2px 6px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            font-weight: bold;
+        }
+
+        .sentence-card.innocent {
+            background-color: var(--success-color); /* Grün für "Ich bin unschuldig/korrekt" */
+            color: white;
+            border-color: var(--success-color);
+            opacity: 0.5; /* Ausgegraut, weil nicht gesucht */
+        }
+        
+        .sentence-card.mistake {
+            /* Wenn man einen Unschuldigen verdächtigt */
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        /* Feedback / Explanation Box */
+        .interrogation-room {
+            background-color: #fdf2f2;
+            border-left: 5px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 5px;
+            display: none; /* Hidden initially */
+            animation: slideIn 0.3s;
+        }
+        
+        .interrogation-room h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+            font-size: 1.1em;
+        }
+
+        /* --- CONTROLS --- */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            color: white;
+            min-width: 140px;
+            transition: opacity 0.2s;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        }
+
+        .btn-next { background-color: var(--primary-color); display: none; } /* Hidden until solved */
+        .btn-reset { background-color: #7f8c8d; }
+        .btn-solve { background-color: #f39c12; }
+        
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* ANIMATIONS */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .sentence-grid {
+                grid-template-columns: 1fr; /* Untereinander */
+            }
+            .sentence-card {
+                padding: 15px;
+                min-height: 60px;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="game-header">
+        <span class="icon-spy">🕵️‍♂️</span>
+        <h1>Der Spion</h1>
+        <p class="instruction">
+            In jeder Runde gibt es 4 Sätze. Drei sind korrekt, aber einer ist falsch.
+            <br>Finden Sie den "Spion" (den falschen Satz)!
+        </p>
+    </div>
+
+    <div class="round-indicator" id="round-display">Runde 1 / 5</div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <div class="game-area" id="game-area">
+        <div class="sentence-grid" id="grid">
+            <!-- Karten werden per JS generiert -->
+        </div>
+
+        <div class="interrogation-room" id="feedback-box">
+            <!-- Erklärung erscheint hier -->
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-next" id="btn-next" onclick="nextRound()">Nächste Runde ➔</button>
+        <button class="btn-reset" onclick="resetGame()">Neustart</button>
+        <button class="btn-solve" onclick="showSolution()">Lösung zeigen</button>
+    </div>
+</div>
+
+<script>
+    // DATEN: Runden mit jeweils 4 Sätzen.
+    // 'sentences': Array mit 4 Strings.
+    // 'spyIndex': Index des falschen Satzes (0-3).
+    // 'explanation': Erklärung, warum es falsch ist.
+    const rounds = [
+        {
+            sentences: [
+                "Я учу новые слова.",           // Richtig (Akkusativ)
+                "Он учится в школе.",           // Richtig (Ort)
+                "Мы учим стихи.",               // Richtig (Akkusativ)
+                "Я учу в университете."         // FALSCH (SPION)
+            ],
+            spyIndex: 3,
+            explanation: "Der Spion ist enttarnt! <br><strong>Fehler:</strong> 'Я учу в университете'. <br><strong>Korrektur:</strong> 'Я <em>учусь</em> в университете'. <br>Wenn man angibt, <em>wo</em> man lernt (Student sein), benutzt man <strong>учиться</strong>."
+        },
+        {
+            sentences: [
+                "Она изучает физику.",          // Richtig (Wissenschaft)
+                "Студенты изучают историю.",    // Richtig (Wissenschaft)
+                "Антон изучает читать.",        // FALSCH (SPION)
+                "Я учу правила."                // Richtig (Memorieren)
+            ],
+            spyIndex: 2,
+            explanation: "Der Spion ist enttarnt! <br><strong>Fehler:</strong> 'Антон изучает читать'. <br><strong>Korrektur:</strong> 'Антон <em>учится</em> читать'. <br><strong>Изучать</strong> braucht ein Substantiv (eine Wissenschaft). Um eine Tätigkeit (Verb) zu lernen, nutzt man <strong>учиться</strong> + Infinitiv."
+        },
+        {
+            sentences: [
+                "Мы занимаемся спортом.",       // Richtig (Instrumental)
+                "Я занимаюсь математику.",      // FALSCH (SPION)
+                "Ты хорошо учишься.",           // Richtig (Qualität)
+                "Они занимаются в парке."       // Richtig (Ort der Tätigkeit)
+            ],
+            spyIndex: 1,
+            explanation: "Der Spion ist enttarnt! <br><strong>Fehler:</strong> 'Я занимаюсь математику'. <br><strong>Korrektur:</strong> 'Я занимаюсь <em>математикой</em>'. <br>Das Verb <strong>заниматься</strong> verlangt den Instrumental (Womit?), nicht den Akkusativ."
+        },
+        {
+            sentences: [
+                "Я научился плавать.",          // Richtig (Fähigkeit erworben)
+                "Он разучился петь.",           // Richtig (Fähigkeit verlernt)
+                "Я научился стихотворение.",    // FALSCH (SPION)
+                "Мы учимся писать."             // Richtig (Prozess)
+            ],
+            spyIndex: 2,
+            explanation: "Der Spion ist enttarnt! <br><strong>Fehler:</strong> 'Я научился стихотворение'. <br><strong>Korrektur:</strong> 'Я <em>выучил</em> стихотворение'. <br><strong>Научиться</strong> bedeutet, eine *Fähigkeit* zu erwerben (+ Infinitiv). Einen Text lernt man auswendig mit <strong>выучить</strong>."
+        },
+        {
+            sentences: [
+                "Учитель учит детей.",          // Richtig (Jemanden lehren)
+                "Студент изучает в Москве.",    // FALSCH (SPION)
+                "Мы учим русский язык.",        // Richtig (Lernen Stoff)
+                "Она учится быстро."            // Richtig (Wie?)
+            ],
+            spyIndex: 1,
+            explanation: "Der Spion ist enttarnt! <br><strong>Fehler:</strong> 'Студент изучает в Москве'. <br><strong>Korrektur:</strong> 'Студент <em>учится</em> в Москве'. <br><strong>Изучать</strong> braucht zwingend ein Objekt (Was studiert er?). Wenn nur der Ort genannt wird, nutzen wir <strong>учиться</strong>."
+        }
+    ];
+
+    let currentRoundIndex = 0;
+    let isRoundSolved = false;
+
+    // INIT
+    window.onload = function() {
+        initGame();
+    };
+
+    function initGame() {
+        currentRoundIndex = 0;
+        loadRound();
+    }
+
+    function loadRound() {
+        isRoundSolved = false;
+        const roundData = rounds[currentRoundIndex];
+        
+        // UI Updates
+        document.getElementById('round-display').textContent = `Runde ${currentRoundIndex + 1} / ${rounds.length}`;
+        const progressPct = (currentRoundIndex / rounds.length) * 100;
+        document.getElementById('progress-bar').style.width = `${progressPct}%`;
+        
+        document.getElementById('feedback-box').style.display = 'none';
+        document.getElementById('btn-next').style.display = 'none';
+
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+
+        // Sätze rendern
+        roundData.sentences.forEach((text, index) => {
+            const card = document.createElement('div');
+            card.className = 'sentence-card';
+            card.textContent = text;
+            card.onclick = () => checkCard(index, card);
+            grid.appendChild(card);
+        });
+    }
+
+    function checkCard(selectedIndex, cardElement) {
+        if (isRoundSolved) return; // Nichts tun, wenn schon gelöst
+
+        const roundData = rounds[currentRoundIndex];
+
+        if (selectedIndex === roundData.spyIndex) {
+            // SPION GEFUNDEN!
+            isRoundSolved = true;
+            cardElement.classList.add('found-spy');
+            
+            // Die anderen (unschuldigen) Karten markieren
+            const allCards = document.querySelectorAll('.sentence-card');
+            allCards.forEach((c, idx) => {
+                if (idx !== selectedIndex) {
+                    c.classList.add('innocent');
+                }
+            });
+
+            // Feedback zeigen
+            const fbBox = document.getElementById('feedback-box');
+            fbBox.innerHTML = `<h3>🚨 Spion gefasst!</h3> ${roundData.explanation}`;
+            fbBox.style.display = 'block';
+
+            // Next Button zeigen (oder Ende)
+            const nextBtn = document.getElementById('btn-next');
+            if (currentRoundIndex < rounds.length - 1) {
+                nextBtn.style.display = 'block';
+                nextBtn.textContent = "Nächste Runde ➔";
+            } else {
+                nextBtn.style.display = 'block';
+                nextBtn.textContent = "Spiel beenden (Neustart)";
+                nextBtn.onclick = resetGame; // Ändert Funktion auf Reset
+                document.getElementById('progress-bar').style.width = `100%`;
+            }
+
+        } else {
+            // FALSCHE WAHL (Einen Unschuldigen verdächtigt)
+            cardElement.classList.add('mistake');
+            // Kleines Wackeln oder so wäre nett, aber Farbe reicht erstmal
+            setTimeout(() => {
+                // Optional: Farbe wieder wegnehmen, damit man nochmal raten kann?
+                // Oder lassen wir es rot? Lassen wir es als "falsch" markiert.
+            }, 500);
+        }
+    }
+
+    function nextRound() {
+        currentRoundIndex++;
+        if (currentRoundIndex < rounds.length) {
+            loadRound();
+        }
+    }
+
+    function resetGame() {
+        currentRoundIndex = 0;
+        // Button Funktion zurücksetzen falls am Ende geändert
+        const nextBtn = document.getElementById('btn-next');
+        nextBtn.onclick = nextRound;
+        loadRound();
+    }
+
+    function showSolution() {
+        if (isRoundSolved) return;
+        
+        const roundData = rounds[currentRoundIndex];
+        const allCards = document.querySelectorAll('.sentence-card');
+        
+        // Simuliere Klick auf den Spion
+        checkCard(roundData.spyIndex, allCards[roundData.spyIndex]);
+    }
+
+</script>
+
+</body>
+</html>
