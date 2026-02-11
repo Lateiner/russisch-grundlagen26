@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Drill: Endungen ergänzen</title>
+
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --stem-bg: #e8f6f3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* --- DRILL LIST --- */
+        .drill-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .drill-item {
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .drill-item:last-child { border-bottom: none; }
+
+        .sentence-wrapper {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 1.2em;
+        }
+
+        /* Der feste Satzteil */
+        .static-text {
+            color: var(--secondary-color);
+        }
+
+        /* Der Wortstamm (fett) */
+        .noun-stem {
+            font-weight: bold;
+            color: var(--primary-color);
+            background-color: var(--stem-bg);
+            padding: 2px 5px;
+            border-radius: 4px 0 0 4px; /* Rechts offen für Dropdown */
+            margin-right: -8px; /* Optisch verbinden */
+            z-index: 1;
+        }
+
+        /* Das Dropdown für die Endung */
+        select.ending-select {
+            font-size: 1em;
+            padding: 4px 10px 4px 8px;
+            border: 2px solid #bdc3c7;
+            border-radius: 0 4px 4px 0;
+            background-color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            color: #333;
+            min-width: 70px;
+        }
+
+        select.ending-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Feedback States */
+        select.ending-select.correct {
+            border-color: var(--success-color);
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        select.ending-select.incorrect {
+            border-color: var(--error-color);
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Grammatik-Hinweis unter dem Satz */
+        .grammar-hint {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85em;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        /* Controls */
+        .feedback-msg {
+            text-align: center;
+            margin-top: 25px;
+            font-weight: bold;
+            min-height: 24px;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            color: white;
+            min-width: 140px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-check { background-color: var(--primary-color); }
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: #f39c12; }
+        button:hover { opacity: 0.9; }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .sentence-wrapper {
+                font-size: 1.1em;
+            }
+            
+            /* Auf Mobile etwas mehr Abstand, damit es tippbar bleibt */
+            .noun-stem {
+                margin-right: 0;
+                border-radius: 4px;
+            }
+            
+            select.ending-select {
+                border-radius: 4px;
+                margin-left: 0;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Drill: Endungen ergänzen</h1>
+    <p class="instruction">
+        Wählen Sie die richtige Endung für das Substantiv. Achten Sie auf das Verb!
+    </p>
+
+    <div class="drill-card" id="drill-container">
+        <!-- Items werden per JS generiert -->
+    </div>
+
+    <div class="feedback-msg" id="global-feedback"></div>
+
+    <div class="controls">
+        <button class="btn-check" onclick="checkAll()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetAll()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="solveAll()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // DATEN: 10 Beispiele
+    // "stem": Der Wortstamm (wird fett angezeigt)
+    // "options": Auswahl an Endungen
+    // "correct": Die richtige Endung
+    // "hint": Grammatikalische Erklärung
+    const drills = [
+        {
+            pre: "Я занимаюсь", 
+            stem: "спорт", 
+            post: "", 
+            correct: "ом", 
+            options: ["ом", "ам", "у"], 
+            hint: "Instrumental (Maskulinum) -> Womit?"
+        },
+        {
+            pre: "Анна изучает", 
+            stem: "биологи", 
+            post: "", 
+            correct: "ю", 
+            options: ["я", "ю", "ей"], 
+            hint: "Akkusativ (Femininum -ия) -> Was?"
+        },
+        {
+            pre: "Мы учимся в", 
+            stem: "школ", 
+            post: "", 
+            correct: "е", 
+            options: ["а", "у", "е"], 
+            hint: "Präpositiv (Femininum) -> Wo?"
+        },
+        {
+            pre: "Брат занимается", 
+            stem: "музык", 
+            post: "", 
+            correct: "ой", 
+            options: ["а", "у", "ой"], 
+            hint: "Instrumental (Femininum) -> Womit?"
+        },
+        {
+            pre: "Они учат", 
+            stem: "грамматик", 
+            post: "", 
+            correct: "у", 
+            options: ["а", "у", "ой"], 
+            hint: "Akkusativ (Femininum) -> Was?"
+        },
+        {
+            pre: "Студент учится в", 
+            stem: "университет", 
+            post: "", 
+            correct: "е", 
+            options: ["е", "у", "ом"], 
+            hint: "Präpositiv (Maskulinum) -> Wo?"
+        },
+        {
+            pre: "Мы занимаемся", 
+            stem: "танц", 
+            post: "", 
+            correct: "ами", 
+            options: ["ы", "ов", "ами"], 
+            hint: "Instrumental (Plural) -> Womit?"
+        },
+        {
+            pre: "Он изучает", 
+            stem: "истори", 
+            post: "", 
+            correct: "ю", 
+            options: ["я", "ю", "и"], 
+            hint: "Akkusativ (Femininum -ия) -> Was?"
+        },
+        {
+            pre: "Я занимаюсь", 
+            stem: "футбол", 
+            post: "", 
+            correct: "ом", 
+            options: ["а", "у", "ом"], 
+            hint: "Instrumental (Maskulinum) -> Womit?"
+        },
+        {
+            pre: "Ты учишь", 
+            stem: "слов", 
+            post: "а?", 
+            correct: "", 
+            // Hier ein Sonderfall: "Слова" ist Plural Akkusativ (Inanimat) = Nominativ. 
+            // Um es als Endungsübung zu gestalten, nehmen wir Singular oder ein anderes Wort.
+            // Besser: "Ты учишь (Regel) правил..." -> "о"
+            options: ["о", "а", "у"], 
+            // Aber User möchte "Endungen ergänzen".
+            // Ändern wir das Beispiel zu: "Ты учишь (Text) текст..."
+        }
+    ];
+    
+    // Korrektur des letzten Beispiels im Code direkt:
+    drills[9] = {
+        pre: "Ты учишь новую", 
+        stem: "тем", 
+        post: "?", 
+        correct: "у", 
+        options: ["а", "у", "е"], 
+        hint: "Akkusativ (Femininum) -> Was?"
+    };
+
+    // INIT
+    window.onload = function() {
+        renderDrills();
+    };
+
+    function renderDrills() {
+        const container = document.getElementById('drill-container');
+        container.innerHTML = '';
+
+        drills.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'drill-item';
+
+            // Optionen bauen
+            let optionsHTML = `<option value="">-?-</option>`;
+            item.options.forEach(opt => {
+                optionsHTML += `<option value="${opt}">-${opt}</option>`;
+            });
+
+            div.innerHTML = `
+                <div class="sentence-wrapper">
+                    <span class="static-text">${item.pre}</span>
+                    <span class="noun-stem">${item.stem}</span>
+                    <select class="ending-select" id="sel-${index}">
+                        ${optionsHTML}
+                    </select>
+                    <span class="static-text">${item.post}</span>
+                </div>
+                <span class="grammar-hint">${item.hint}</span>
+            `;
+
+            container.appendChild(div);
+        });
+    }
+
+    /* LOGIK */
+
+    function checkAll() {
+        let correctCount = 0;
+        let allSelected = true;
+
+        drills.forEach((item, index) => {
+            const sel = document.getElementById(`sel-${index}`);
+            const val = sel.value;
+
+            if (val === "") {
+                allSelected = false;
+                sel.classList.remove('correct', 'incorrect');
+                return;
+            }
+
+            if (val === item.correct) {
+                sel.classList.add('correct');
+                sel.classList.remove('incorrect');
+                correctCount++;
+            } else {
+                sel.classList.add('incorrect');
+                sel.classList.remove('correct');
+            }
+        });
+
+        const globalFeed = document.getElementById('global-feedback');
+        
+        if (!allSelected) {
+            globalFeed.textContent = "Bitte wählen Sie alle Endungen aus.";
+            globalFeed.style.color = "var(--secondary-color)";
+        } else if (correctCount === drills.length) {
+            globalFeed.textContent = "Ausgezeichnet! Die Fälle sitzen.";
+            globalFeed.style.color = "var(--success-color)";
+        } else {
+            globalFeed.textContent = `Sie haben ${correctCount} von ${drills.length} Endungen richtig.`;
+            globalFeed.style.color = "var(--error-color)";
+        }
+    }
+
+    function resetAll() {
+        drills.forEach((item, index) => {
+            const sel = document.getElementById(`sel-${index}`);
+            sel.value = "";
+            sel.classList.remove('correct', 'incorrect');
+        });
+        document.getElementById('global-feedback').textContent = "";
+    }
+
+    function solveAll() {
+        drills.forEach((item, index) => {
+            const sel = document.getElementById(`sel-${index}`);
+            sel.value = item.correct;
+            sel.classList.remove('incorrect');
+            sel.classList.add('correct');
+        });
+        
+        const globalFeed = document.getElementById('global-feedback');
+        globalFeed.textContent = "Lösung angezeigt.";
+        globalFeed.style.color = "var(--primary-color)";
+    }
+
+</script>
+
+</body>
+</html>
