@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russische Grammatik: Verben des Lernens</title>
+    <!-- Drag & Drop Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --highlight: #f1c40f;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--secondary-color);
+            text-align: center;
+        }
+
+        .intro-box {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .rule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .rule-card {
+            background: #eef2f7;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .rule-card strong {
+            color: var(--primary-color);
+            font-size: 1.1em;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Exercise Styles */
+        .exercise-card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .exercise-header {
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .exercise-header h3 {
+            text-align: left;
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+            font-size: 0.9em;
+        }
+
+        .btn-check { background-color: var(--primary-color); color: white; }
+        .btn-check:hover { background-color: #2980b9; }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-reset:hover { background-color: #7f8c8d; }
+
+        .btn-solve { background-color: #f39c12; color: white; }
+        .btn-solve:hover { background-color: #d35400; }
+
+        /* Input Styles */
+        select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            margin: 5px 0;
+            background-color: white;
+            cursor: pointer;
+            max-width: 100%;
+        }
+
+        .input-correct {
+            border-color: var(--success-color) !important;
+            background-color: #d4edda !important;
+        }
+
+        .input-incorrect {
+            border-color: var(--error-color) !important;
+            background-color: #f8d7da !important;
+        }
+        
+        /* Helper classes for radio labels */
+        .label-correct {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        .label-incorrect {
+            color: var(--error-color);
+            text-decoration: line-through;
+        }
+
+        /* Drag & Drop Styles */
+        .drop-zone {
+            border: 2px dashed #bdc3c7;
+            padding: 15px;
+            min-height: 50px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .draggable {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: move;
+            display: inline-block;
+            margin: 2px;
+            user-select: none;
+        }
+
+        .drag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            min-height: 40px;
+            margin-bottom: 15px;
+        }
+
+        /* Radio/Checkbox groups */
+        .option-group {
+            margin: 10px 0;
+            padding: 10px;
+            background: #fcfcfc;
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+        .option-group p {
+            font-weight: bold;
+            margin-top: 0;
+        }
+        .option-group label {
+            margin-right: 15px;
+            cursor: pointer;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        /* Feedback Message */
+        .feedback-msg {
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+
+        /* Styles für Aufgabe 5 (Klick-Satzbau) */
+        .word-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            min-height: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .sentence-builder {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background: #fff;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            min-height: 50px;
+            align-items: center;
+        }
+
+        .click-word {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        
+        .click-word:hover {
+            transform: scale(1.05);
+            background-color: var(--primary-color);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik: Verben des Lernens</h1>
+
+    <!-- EINFÜHRUNG -->
+    <div class="intro-box">
+        <h2>Einführung</h2>
+        <p>Im Russischen gibt es mehrere Verben für "lernen/studieren". Hier ist eine Übersicht:</p>
+        <div class="rule-grid">
+            <div class="rule-card">
+                <strong>1. учиться (wo? wie?)</strong>
+                <p>Bezieht sich auf den Prozess (Schüler/Student sein).<br>
+                <em>Beispiele:</em> Я учусь в школе. Он учится хорошо.</p>
+            </div>
+            <div class="rule-card">
+                <strong>2. учить / выучить (was?)</strong>
+                <p>Auswendig lernen, sich einprägen (Akkusativ).<br>
+                <em>Beispiele:</em> Я учу слова. Мы выучили стихи.</p>
+            </div>
+            <div class="rule-card">
+                <strong>3. изучать (was?)</strong>
+                <p>Tiefgehend studieren, ein Fach an der Uni, eine Wissenschaft.<br>
+                <em>Beispiele:</em> Она изучает физику. Мы изучаем литературу.</p>
+            </div>
+            <div class="rule-card">
+                <strong>4. заниматься (wo? womit?)</strong>
+                <p>Tätig sein, Hausaufgaben machen, üben, Hobby.<br>
+                <em>Beispiele:</em> Я занимаюсь дома. Они занимаются спортом.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 1: Multiple Choice (Dropdown) -->
+    <div class="exercise-card" id="ex1">
+        <div class="exercise-header">
+            <h3>1. Das richtige Verb auswählen</h3>
+        </div>
+        <p>Wählen Sie das passende Verb für den Satz.</p>
+        <div class="option-group">
+            1. Антон <select id="ex1_1"><option value="">...</option><option value="учится">учится</option><option value="учит">учит</option><option value="изучает">изучает</option></select> в университете.<br><br>
+            2. Маша <select id="ex1_2"><option value="">...</option><option value="учится">учится</option><option value="учит">учит</option><option value="изучает">изучает</option></select> новые слова.<br><br>
+            3. Мы <select id="ex1_3"><option value="">...</option><option value="учимся">учимся</option><option value="занимаемся">занимаемся</option><option value="изучаем">изучаем</option></select> биологию (als Wissenschaft).
+        </div>
+        <div class="feedback-msg" id="msg1"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx1()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx1()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx1()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 2: Drag & Drop (Zuordnung) -->
+    <div class="exercise-card" id="ex2">
+        <div class="exercise-header">
+            <h3>2. Zuordnung: Kontext</h3>
+        </div>
+        <p>Ziehen Sie die Wörter in die passende Kategorie.</p>
+        
+        <div class="drag-container" id="ex2-source">
+            <span class="draggable" draggable="true" id="d2_1" data-target="box2_1">в школе</span>
+            <span class="draggable" draggable="true" id="d2_2" data-target="box2_2">новые слова</span>
+            <span class="draggable" draggable="true" id="d2_3" data-target="box2_3">химию (Fach)</span>
+            <span class="draggable" draggable="true" id="d2_4" data-target="box2_1">отлично</span>
+            <span class="draggable" draggable="true" id="d2_5" data-target="box2_2">стихотворение</span>
+            <span class="draggable" draggable="true" id="d2_6" data-target="box2_3">историю России</span>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:200px;">
+                <strong>Учиться (Wo/Wie?)</strong>
+                <div class="drop-zone" id="box2_1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            </div>
+            <div style="flex:1; min-width:200px;">
+                <strong>Учить (Was? - Memorieren)</strong>
+                <div class="drop-zone" id="box2_2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            </div>
+            <div style="flex:1; min-width:200px;">
+                <strong>Изучать (Was? - Tiefgehend)</strong>
+                <div class="drop-zone" id="box2_3" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            </div>
+        </div>
+
+        <div class="feedback-msg" id="msg2"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx2()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx2()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx2()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 3: Konjugation (Dropdown) -->
+    <div class="exercise-card" id="ex3">
+        <div class="exercise-header">
+            <h3>3. Konjugation: Учиться</h3>
+        </div>
+        <p>Wählen Sie die richtige Form des Verbs "учиться".</p>
+        <div class="option-group">
+            Я <select id="ex3_1">
+                <option value="">...</option>
+                <option value="учишься">учишься</option>
+                <option value="учусь">учусь</option>
+                <option value="учатся">учатся</option>
+            </select> в Берлине.<br><br>
+            Ты <select id="ex3_2">
+                <option value="">...</option>
+                <option value="учишься">учишься</option>
+                <option value="учимся">учимся</option>
+                <option value="учится">учится</option>
+            </select> хорошо.<br><br>
+            Они <select id="ex3_3">
+                <option value="">...</option>
+                <option value="учимся">учимся</option>
+                <option value="учитесь">учитесь</option>
+                <option value="учатся">учатся</option>
+            </select> в школе.
+        </div>
+        <div class="feedback-msg" id="msg3"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx3()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx3()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx3()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 4: Ja/Nein (Radio Buttons) -->
+    <div class="exercise-card" id="ex4">
+        <div class="exercise-header">
+            <h3>4. Richtig oder Falsch?</h3>
+        </div>
+        <p>Entscheiden Sie, ob der Satz grammatikalisch und semantisch korrekt ist.</p>
+        
+        <div class="option-group" id="ex4_group1">
+            <p>1. "Я учу в университете."</p>
+            <label id="lbl_ex4_1_yes"><input type="radio" name="q4_1" id="ex4_1_yes" value="yes"> Richtig</label>
+            <label id="lbl_ex4_1_no"><input type="radio" name="q4_1" id="ex4_1_no" value="no"> Falsch (Es muss "учусь" heißen)</label>
+        </div>
+        
+        <div class="option-group" id="ex4_group2">
+            <p>2. "Антон изучает математику."</p>
+            <label id="lbl_ex4_2_yes"><input type="radio" name="q4_2" id="ex4_2_yes" value="yes"> Richtig</label>
+            <label id="lbl_ex4_2_no"><input type="radio" name="q4_2" id="ex4_2_no" value="no"> Falsch</label>
+        </div>
+
+        <div class="feedback-msg" id="msg4"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx4()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx4()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx4()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 5: Satzbau (Click & Insert) -->
+    <div class="exercise-card" id="ex5">
+        <div class="exercise-header">
+            <h3>5. Satzbau (Klicken)</h3>
+        </div>
+        <p>Klicken Sie auf die Wörter, um den Satz zu bilden. (Klicken Sie im Satz auf ein Wort, um es zurückzulegen.)</p>
+        
+        <div class="sentence-builder" id="ex5-sentence">
+            <!-- Hier landen die Wörter -->
+            <span style="color:#aaa; font-style:italic;" id="ex5-placeholder">Satz erscheint hier...</span>
+        </div>
+
+        <div class="word-bank" id="ex5-bank">
+            <!-- Wörter werden per JS hier eingefügt -->
+        </div>
+        
+        <div class="feedback-msg" id="msg5"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx5()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx5()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx5()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 6: Lückentext (Dropdown) -->
+    <div class="exercise-card" id="ex6">
+        <div class="exercise-header">
+            <h3>6. Lückentext</h3>
+        </div>
+        <p>Wählen Sie die passenden Verben im Dropdown-Menü.</p>
+        <p style="line-height: 2.5;">
+            Привет! Я студент. Я 
+            <select id="ex6_1">
+                <option value="">...</option>
+                <option value="учусь">учусь</option>
+                <option value="учу">учу</option>
+                <option value="занимаюсь">занимаюсь</option>
+            </select>
+            в МГУ. <br>
+            Мой факультет - исторический, поэтому я 
+            <select id="ex6_2">
+                <option value="">...</option>
+                <option value="учусь">учусь</option>
+                <option value="изучаю">изучаю</option>
+                <option value="занимаюсь">занимаюсь</option>
+            </select>
+            историю. <br>
+            Каждый день я 
+            <select id="ex6_3">
+                <option value="">...</option>
+                <option value="учу">учу</option>
+                <option value="изучаю">изучаю</option>
+                <option value="занимаюсь">занимаюсь</option>
+            </select>
+            в библиотеке. <br>
+            Сейчас я 
+            <select id="ex6_4">
+                <option value="">...</option>
+                <option value="учу">учу</option>
+                <option value="учусь">учусь</option>
+                <option value="изучаю">изучаю</option>
+            </select>
+            английские слова.
+        </p>
+        <div class="feedback-msg" id="msg6"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx6()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx6()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx6()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 7: Übersetzung (Multiple Choice) -->
+    <div class="exercise-card" id="ex7">
+        <div class="exercise-header">
+            <h3>7. Übersetzung</h3>
+        </div>
+        <p>Was ist die korrekte Übersetzung für:</p>
+        <p><strong>"Wir lernen (auswendig) ein Gedicht."</strong></p>
+        <div class="option-group" id="ex7_options">
+            <label style="display:block; margin-bottom:10px;" id="lbl_ex7_a">
+                <input type="radio" name="q7" id="ex7_a" value="a"> 
+                Мы учимся стихотворение.
+            </label>
+            <label style="display:block; margin-bottom:10px;" id="lbl_ex7_b">
+                <input type="radio" name="q7" id="ex7_b" value="b"> 
+                Мы учим стихотворение.
+            </label>
+            <label style="display:block; margin-bottom:10px;" id="lbl_ex7_c">
+                <input type="radio" name="q7" id="ex7_c" value="c"> 
+                Мы изучаем стихотворение.
+            </label>
+        </div>
+
+        <div class="feedback-msg" id="msg7"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx7()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx7()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx7()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 8: Aspekte (Dropdown) -->
+    <div class="exercise-card" id="ex8">
+        <div class="exercise-header">
+            <h3>8. Aspekte: учить vs. выучить</h3>
+        </div>
+        <p>Wählen Sie den richtigen Aspekt (Prozess oder Resultat).</p>
+        <div class="option-group">
+            1. Gestern habe ich den ganzen Abend Wörter <select id="ex8_1"><option value="">...</option><option value="учил">учил (lernte)</option><option value="выучил">выучил (habe gelernt)</option></select>. (Prozess)<br><br>
+            2. Endlich habe ich alle Regeln <select id="ex8_2"><option value="">...</option><option value="учил">учил</option><option value="выучил">выучил</option></select>! (Resultat)
+        </div>
+        <div class="feedback-msg" id="msg8"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx8()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx8()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx8()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 9: Fälle erkennen (Dropdown) -->
+    <div class="exercise-card" id="ex9">
+        <div class="exercise-header">
+            <h3>9. Fälle erkennen</h3>
+        </div>
+        <p>Welcher Fall folgt nach diesen Verben?</p>
+        
+        <div class="option-group">
+            1. Учиться (где?) -> 
+            <select id="ex9_1">
+                <option value="">...</option>
+                <option value="4">4 (Akkusativ)</option>
+                <option value="5">5 (Instrumental)</option>
+                <option value="6">6 (Präpositiv)</option>
+            </select><br><br>
+            
+            2. Учить (что?) -> 
+            <select id="ex9_2">
+                <option value="">...</option>
+                <option value="4">4 (Akkusativ)</option>
+                <option value="5">5 (Instrumental)</option>
+                <option value="6">6 (Präpositiv)</option>
+            </select><br><br>
+            
+            3. Заниматься (чем?) -> 
+            <select id="ex9_3">
+                <option value="">...</option>
+                <option value="4">4 (Akkusativ)</option>
+                <option value="5">5 (Instrumental)</option>
+                <option value="6">6 (Präpositiv)</option>
+            </select>
+        </div>
+
+        <div class="feedback-msg" id="msg9"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx9()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx9()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx9()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 10: Drag & Drop Satzbildung -->
+    <div class="exercise-card" id="ex10">
+        <div class="exercise-header">
+            <h3>10. Satzteile verbinden</h3>
+        </div>
+        <p>Verbinden Sie Anfang und Ende.</p>
+        
+        <div class="drag-container" id="ex10-source">
+            <span class="draggable" draggable="true" id="d10_1" data-target="b10_1">русский язык.</span>
+            <span class="draggable" draggable="true" id="d10_2" data-target="b10_2">спортом.</span>
+            <span class="draggable" draggable="true" id="d10_3" data-target="b10_3">в школе.</span>
+        </div>
+
+        <div>
+            <div style="margin-bottom:10px;">
+                1. Дети учатся <span class="drop-zone" style="display:inline-block; vertical-align:middle; min-width:150px; min-height:30px; padding:5px;" id="b10_3" ondrop="drop(event)" ondragover="allowDrop(event)"></span>
+            </div>
+            <div style="margin-bottom:10px;">
+                2. Я учу <span class="drop-zone" style="display:inline-block; vertical-align:middle; min-width:150px; min-height:30px; padding:5px;" id="b10_1" ondrop="drop(event)" ondragover="allowDrop(event)"></span>
+            </div>
+            <div style="margin-bottom:10px;">
+                3. Они занимаются <span class="drop-zone" style="display:inline-block; vertical-align:middle; min-width:150px; min-height:30px; padding:5px;" id="b10_2" ondrop="drop(event)" ondragover="allowDrop(event)"></span>
+            </div>
+        </div>
+
+        <div class="feedback-msg" id="msg10"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx10()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx10()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx10()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 11: Lehren vs. Lernen (Dropdown) -->
+    <div class="exercise-card" id="ex11">
+        <div class="exercise-header">
+            <h3>11. Lehren oder Lernen?</h3>
+        </div>
+        <p>Wählen Sie: <strong>учит</strong> (lehrt) oder <strong>учится</strong> (lernt).</p>
+        <div class="option-group">
+            1. Учитель 
+            <select id="ex11_1">
+                <option value="">...</option>
+                <option value="учит">учит</option>
+                <option value="учится">учится</option>
+            </select>
+            учеников.<br><br>
+            2. Ученик 
+            <select id="ex11_2">
+                <option value="">...</option>
+                <option value="учит">учит</option>
+                <option value="учится">учится</option>
+            </select>
+            в классе.
+        </div>
+        <div class="feedback-msg" id="msg11"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx11()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx11()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx11()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- ÜBUNG 12: Fehler finden (Dropdown) -->
+    <div class="exercise-card" id="ex12">
+        <div class="exercise-header">
+            <h3>12. Fehlerkorrektur</h3>
+        </div>
+        <p>Der Satz "Я изучаю новые слова" ist stilistisch nicht ideal.</p>
+        <p>Welches Verb im Infinitiv passt besser für "Vokabeln pauken / auswendig lernen"?</p>
+        <select id="ex12_1">
+            <option value="">...</option>
+            <option value="учить">учить</option>
+            <option value="учиться">учиться</option>
+            <option value="изучать">изучать</option>
+            <option value="заниматься">заниматься</option>
+        </select>
+
+        <div class="feedback-msg" id="msg12"></div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkEx12()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetEx12()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveEx12()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Hilfsfunktionen
+    function setFeedback(elementId, isCorrect, message) {
+        const el = document.getElementById(elementId);
+        el.innerHTML = message;
+        el.style.color = isCorrect ? 'var(--success-color)' : 'var(--error-color)';
+    }
+
+    function markInput(inputId, isCorrect) {
+        const el = document.getElementById(inputId);
+        el.classList.remove('input-correct', 'input-incorrect');
+        el.classList.add(isCorrect ? 'input-correct' : 'input-incorrect');
+    }
+
+    function clearInputStyles(containerId) {
+        const container = document.getElementById(containerId);
+        
+        // Inputs & Selects leeren
+        const inputs = container.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            if(input.type !== 'button') {
+                if(input.type === 'radio' || input.type === 'checkbox') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+                input.classList.remove('input-correct', 'input-incorrect');
+            }
+        });
+
+        // Labels zurücksetzen
+        const labels = container.querySelectorAll('label');
+        labels.forEach(lbl => {
+            lbl.classList.remove('label-correct', 'label-incorrect');
+        });
+
+        const msg = container.querySelector('.feedback-msg');
+        if(msg) msg.innerHTML = '';
+    }
+
+    /* --- DRAG AND DROP LOGIK --- */
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+    
+    // Add event listeners for draggables
+    document.addEventListener('dragstart', function(e) {
+        if (e.target.className.includes('draggable')) {
+            e.dataTransfer.setData("text", e.target.id);
+        }
+    });
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var draggedElement = document.getElementById(data);
+        
+        let target = ev.target;
+        while (!target.classList.contains('drop-zone') && !target.classList.contains('drag-container')) {
+            target = target.parentNode;
+            if(!target) return; 
+        }
+        
+        target.appendChild(draggedElement);
+    }
+
+    /* --- ÜBUNG 1 --- */
+    function checkEx1() {
+        const a1 = document.getElementById('ex1_1').value;
+        const a2 = document.getElementById('ex1_2').value;
+        const a3 = document.getElementById('ex1_3').value;
+        
+        markInput('ex1_1', a1 === 'учится');
+        markInput('ex1_2', a2 === 'учит');
+        markInput('ex1_3', a3 === 'изучаем');
+
+        if (a1 === 'учится' && a2 === 'учит' && a3 === 'изучаем') {
+            setFeedback('msg1', true, 'Alles richtig! Отлично!');
+        } else {
+            setFeedback('msg1', false, 'Einige Antworten sind falsch.');
+        }
+    }
+    function resetEx1() { clearInputStyles('ex1'); }
+    function solveEx1() {
+        document.getElementById('ex1_1').value = 'учится';
+        document.getElementById('ex1_2').value = 'учит';
+        document.getElementById('ex1_3').value = 'изучаем';
+        checkEx1();
+    }
+
+    /* --- ÜBUNG 2 (Drag & Drop) --- */
+    function checkEx2() {
+        let correctCount = 0;
+        const items = ['d2_1', 'd2_2', 'd2_3', 'd2_4', 'd2_5', 'd2_6'];
+        
+        items.forEach(id => {
+            const el = document.getElementById(id);
+            const parent = el.parentElement;
+            const targetId = el.getAttribute('data-target');
+            
+            if (parent.id === targetId) {
+                el.style.backgroundColor = 'var(--success-color)';
+                correctCount++;
+            } else if (parent.classList.contains('drop-zone')) {
+                el.style.backgroundColor = 'var(--error-color)';
+            } else {
+                el.style.backgroundColor = 'var(--primary-color)';
+            }
+        });
+
+        if (correctCount === 6) {
+            setFeedback('msg2', true, 'Perfekt zugeordnet!');
+        } else {
+            setFeedback('msg2', false, 'Versuch es noch einmal.');
+        }
+    }
+    function resetEx2() {
+        const source = document.getElementById('ex2-source');
+        const items = ['d2_1', 'd2_2', 'd2_3', 'd2_4', 'd2_5', 'd2_6'];
+        items.forEach(id => {
+            const el = document.getElementById(id);
+            el.style.backgroundColor = 'var(--primary-color)';
+            source.appendChild(el);
+        });
+        setFeedback('msg2', false, '');
+    }
+    function solveEx2() {
+        const items = ['d2_1', 'd2_2', 'd2_3', 'd2_4', 'd2_5', 'd2_6'];
+        items.forEach(id => {
+            const el = document.getElementById(id);
+            const targetId = el.getAttribute('data-target');
+            document.getElementById(targetId).appendChild(el);
+        });
+        checkEx2();
+    }
+
+    /* --- ÜBUNG 3 --- */
+    function checkEx3() {
+        const a1 = document.getElementById('ex3_1').value;
+        const a2 = document.getElementById('ex3_2').value;
+        const a3 = document.getElementById('ex3_3').value;
+
+        markInput('ex3_1', a1 === 'учусь');
+        markInput('ex3_2', a2 === 'учишься');
+        markInput('ex3_3', a3 === 'учатся');
+        
+        if (a1==='учусь' && a2==='учишься' && a3==='учатся') setFeedback('msg3', true, 'Korrekt!');
+        else setFeedback('msg3', false, 'Überprüfe die Konjugation.');
+    }
+    function resetEx3() { clearInputStyles('ex3'); }
+    function solveEx3() {
+        document.getElementById('ex3_1').value = 'учусь';
+        document.getElementById('ex3_2').value = 'учишься';
+        document.getElementById('ex3_3').value = 'учатся';
+        checkEx3();
+    }
+
+    /* --- ÜBUNG 4 (Richtig/Falsch) --- */
+    function checkEx4() {
+        // Satz 1: Ist falsch, also muss der Benutzer "Nein" (Falsch) gewählt haben.
+        const r1 = document.querySelector('input[name="q4_1"]:checked');
+        const r2 = document.querySelector('input[name="q4_2"]:checked');
+        
+        let correct1 = false;
+        let correct2 = false;
+
+        // Reset Styles
+        document.getElementById('lbl_ex4_1_yes').className = '';
+        document.getElementById('lbl_ex4_1_no').className = '';
+        document.getElementById('lbl_ex4_2_yes').className = '';
+        document.getElementById('lbl_ex4_2_no').className = '';
+
+        if(r1 && r1.value === 'no') {
+            correct1 = true;
+            document.getElementById('lbl_ex4_1_no').classList.add('label-correct');
+        } else if (r1) {
+            document.getElementById('lbl_ex4_1_yes').classList.add('label-incorrect');
+        }
+
+        if(r2 && r2.value === 'yes') {
+            correct2 = true;
+            document.getElementById('lbl_ex4_2_yes').classList.add('label-correct');
+        } else if (r2) {
+            document.getElementById('lbl_ex4_2_no').classList.add('label-incorrect');
+        }
+        
+        if(correct1 && correct2) {
+            setFeedback('msg4', true, 'Sehr gut! Satz 1 ist falsch, Satz 2 ist richtig.');
+        } else {
+            setFeedback('msg4', false, 'Noch nicht ganz richtig.');
+        }
+    }
+    function resetEx4() { clearInputStyles('ex4'); }
+    function solveEx4() {
+        resetEx4();
+        // Lösung setzen
+        document.getElementById('ex4_1_no').checked = true;
+        document.getElementById('ex4_2_yes').checked = true;
+        
+        // Visuelles Feedback erzwingen
+        document.getElementById('lbl_ex4_1_no').classList.add('label-correct');
+        document.getElementById('lbl_ex4_2_yes').classList.add('label-correct');
+        
+        setFeedback('msg4', true, 'Lösung angezeigt.');
+    }
+
+    /* --- ÜBUNG 5 (Click & Insert) --- */
+    const ex5Words = ["Анна", "занимается", "вечером", "в", "библиотеке"];
+    let currentSentence = [];
+
+    function initEx5() {
+        const bank = document.getElementById('ex5-bank');
+        bank.innerHTML = '';
+        // Shuffle words
+        const shuffled = [...ex5Words].sort(() => Math.random() - 0.5);
+        shuffled.forEach(word => {
+            const span = document.createElement('span');
+            span.className = 'click-word';
+            span.textContent = word;
+            span.onclick = function() { addToSentence(word, span); };
+            bank.appendChild(span);
+        });
+        document.getElementById('ex5-sentence').innerHTML = '<span style="color:#aaa; font-style:italic;" id="ex5-placeholder">Satz erscheint hier...</span>';
+        currentSentence = [];
+    }
+    
+    // Initial call
+    initEx5();
+
+    function addToSentence(word, element) {
+        // Remove placeholder if exists
+        const ph = document.getElementById('ex5-placeholder');
+        if(ph) ph.remove();
+
+        // Add to sentence array
+        currentSentence.push(word);
+        
+        // Remove from bank visual
+        element.remove();
+
+        // Add to sentence visual
+        const sentContainer = document.getElementById('ex5-sentence');
+        const span = document.createElement('span');
+        span.className = 'click-word';
+        span.textContent = word;
+        span.onclick = function() { returnToBank(word, span); };
+        sentContainer.appendChild(span);
+    }
+
+    function returnToBank(word, element) {
+        // Remove from sentence array (find first index)
+        const idx = currentSentence.indexOf(word);
+        if(idx > -1) currentSentence.splice(idx, 1);
+
+        // Remove from sentence visual
+        element.remove();
+
+        // Add back to bank visual
+        const bank = document.getElementById('ex5-bank');
+        const span = document.createElement('span');
+        span.className = 'click-word';
+        span.textContent = word;
+        span.onclick = function() { addToSentence(word, span); };
+        bank.appendChild(span);
+
+        // Add placeholder if empty
+        if(currentSentence.length === 0) {
+            document.getElementById('ex5-sentence').innerHTML = '<span style="color:#aaa; font-style:italic;" id="ex5-placeholder">Satz erscheint hier...</span>';
+        }
+    }
+
+    function checkEx5() {
+        const sentence = currentSentence.join(' ');
+        const correctSentences = [
+            "Анна занимается вечером в библиотеке",
+            "Анна вечером занимается в библиотеке",
+            "Вечером Анна занимается в библиотеке"
+        ];
+        
+        const container = document.getElementById('ex5-sentence');
+        if (correctSentences.includes(sentence)) {
+            container.style.borderColor = 'var(--success-color)';
+            container.style.backgroundColor = '#d4edda';
+            setFeedback('msg5', true, 'Sehr gut! Der Satz ist korrekt.');
+        } else {
+            container.style.borderColor = 'var(--error-color)';
+            container.style.backgroundColor = '#f8d7da';
+            setFeedback('msg5', false, 'Die Wortstellung oder der Satz ist noch nicht richtig.');
+        }
+    }
+
+    function resetEx5() {
+        initEx5();
+        const container = document.getElementById('ex5-sentence');
+        container.style.borderColor = '#ccc';
+        container.style.backgroundColor = '#fff';
+        setFeedback('msg5', false, '');
+    }
+
+    function solveEx5() {
+        resetEx5();
+        const bank = document.getElementById('ex5-bank');
+        bank.innerHTML = ''; // Bank leeren
+        
+        const sentContainer = document.getElementById('ex5-sentence');
+        sentContainer.innerHTML = '';
+        
+        // Feste Lösung: "Анна вечером занимается в библиотеке"
+        const solution = ["Анна", "вечером", "занимается", "в", "библиотеке"];
+        currentSentence = solution;
+        
+        solution.forEach(word => {
+            const span = document.createElement('span');
+            span.className = 'click-word';
+            span.textContent = word;
+            // Keine Klick-Funktion für Lösung, um Verwirrung zu vermeiden
+            span.style.cursor = 'default';
+            sentContainer.appendChild(span);
+        });
+        checkEx5();
+    }
+
+    /* --- ÜBUNG 6 --- */
+    function checkEx6() {
+        const a1 = document.getElementById('ex6_1').value;
+        const a2 = document.getElementById('ex6_2').value;
+        const a3 = document.getElementById('ex6_3').value;
+        const a4 = document.getElementById('ex6_4').value;
+
+        markInput('ex6_1', a1 === 'учусь');
+        markInput('ex6_2', a2 === 'изучаю');
+        markInput('ex6_3', a3 === 'занимаюсь');
+        markInput('ex6_4', a4 === 'учу');
+
+        if(a1==='учусь' && a2==='изучаю' && a3==='занимаюсь' && a4==='учу') {
+            setFeedback('msg6', true, 'Text komplett richtig!');
+        } else {
+            setFeedback('msg6', false, 'Da sind noch Fehler.');
+        }
+    }
+    function resetEx6() { clearInputStyles('ex6'); }
+    function solveEx6() {
+        document.getElementById('ex6_1').value = 'учусь';
+        document.getElementById('ex6_2').value = 'изучаю';
+        document.getElementById('ex6_3').value = 'занимаюсь';
+        document.getElementById('ex6_4').value = 'учу';
+        checkEx6();
+    }
+
+    /* --- ÜBUNG 7 --- */
+    function checkEx7() {
+        const r = document.querySelector('input[name="q7"]:checked');
+        
+        // Reset labels
+        document.querySelectorAll('#ex7_options label').forEach(l => l.className = '');
+
+        if(!r) {
+            setFeedback('msg7', false, 'Bitte wählen Sie eine Option.');
+            return;
+        }
+
+        if(r.value === 'b') {
+            document.getElementById('lbl_ex7_b').classList.add('label-correct');
+            setFeedback('msg7', true, 'Richtig! "Учить" wird für das Auswendiglernen (Vokabeln, Gedichte) benutzt.');
+        } else if (r.value === 'c') {
+            document.getElementById('lbl_ex7_c').classList.add('label-incorrect');
+            setFeedback('msg7', false, 'Falsch. "Изучать" bedeutet, etwas tiefgehend zu analysieren/studieren (Wissenschaft). Ein Gedicht lernt man meist auswendig (учить).');
+        } else {
+            document.getElementById('lbl_ex7_a').classList.add('label-incorrect');
+            setFeedback('msg7', false, 'Falsch. "Учимся" ist reflexiv und braucht keinen Akkusativ.');
+        }
+    }
+    function resetEx7() { clearInputStyles('ex7'); }
+    function solveEx7() {
+        resetEx7();
+        document.getElementById('ex7_b').checked = true;
+        document.getElementById('lbl_ex7_b').classList.add('label-correct');
+        setFeedback('msg7', true, 'Lösung angezeigt.');
+    }
+
+    /* --- ÜBUNG 8 --- */
+    function checkEx8() {
+        const a1 = document.getElementById('ex8_1').value;
+        const a2 = document.getElementById('ex8_2').value;
+        
+        markInput('ex8_1', a1 === 'учил');
+        markInput('ex8_2', a2 === 'выучил');
+
+        if(a1 === 'учил' && a2 === 'выучил') setFeedback('msg8', true, 'Richtig!');
+        else setFeedback('msg8', false, 'Prüfe Prozess vs. Resultat.');
+    }
+    function resetEx8() { clearInputStyles('ex8'); }
+    function solveEx8() {
+        document.getElementById('ex8_1').value = 'учил';
+        document.getElementById('ex8_2').value = 'выучил';
+        checkEx8();
+    }
+
+    /* --- ÜBUNG 9 --- */
+    function checkEx9() {
+        const a1 = document.getElementById('ex9_1').value;
+        const a2 = document.getElementById('ex9_2').value;
+        const a3 = document.getElementById('ex9_3').value;
+
+        markInput('ex9_1', a1 === '6');
+        markInput('ex9_2', a2 === '4');
+        markInput('ex9_3', a3 === '5');
+
+        if(a1==='6' && a2==='4' && a3==='5') setFeedback('msg9', true, 'Korrekt! (6=Präp, 4=Akk, 5=Instr)');
+        else setFeedback('msg9', false, 'Überprüfe die Fälle.');
+    }
+    function resetEx9() { clearInputStyles('ex9'); }
+    function solveEx9() {
+        document.getElementById('ex9_1').value = '6';
+        document.getElementById('ex9_2').value = '4';
+        document.getElementById('ex9_3').value = '5';
+        checkEx9();
+    }
+
+    /* --- ÜBUNG 10 --- */
+    function checkEx10() {
+        let correctCount = 0;
+        const items = ['d10_1', 'd10_2', 'd10_3'];
+        
+        items.forEach(id => {
+            const el = document.getElementById(id);
+            const parent = el.parentElement;
+            const targetId = el.getAttribute('data-target');
+            
+            if (parent.id === targetId) {
+                el.style.backgroundColor = 'var(--success-color)';
+                correctCount++;
+            } else if (parent.classList.contains('drop-zone')) {
+                el.style.backgroundColor = 'var(--error-color)';
+            } else {
+                el.style.backgroundColor = 'var(--primary-color)';
+            }
+        });
+
+        if (correctCount === 3) setFeedback('msg10', true, 'Sätze korrekt gebildet!');
+        else setFeedback('msg10', false, 'Falsche Zuordnung.');
+    }
+    function resetEx10() {
+        const source = document.getElementById('ex10-source');
+        const items = ['d10_1', 'd10_2', 'd10_3'];
+        items.forEach(id => {
+            const el = document.getElementById(id);
+            el.style.backgroundColor = 'var(--primary-color)';
+            source.appendChild(el);
+        });
+        setFeedback('msg10', false, '');
+    }
+    function solveEx10() {
+        const items = ['d10_1', 'd10_2', 'd10_3'];
+        items.forEach(id => {
+            const el = document.getElementById(id);
+            const targetId = el.getAttribute('data-target');
+            document.getElementById(targetId).appendChild(el);
+        });
+        checkEx10();
+    }
+
+    /* --- ÜBUNG 11 --- */
+    function checkEx11() {
+        const a1 = document.getElementById('ex11_1').value;
+        const a2 = document.getElementById('ex11_2').value;
+        
+        markInput('ex11_1', a1 === 'учит');
+        markInput('ex11_2', a2 === 'учится');
+
+        if(a1==='учит' && a2==='учится') setFeedback('msg11', true, 'Richtig!');
+        else setFeedback('msg11', false, 'Falsch.');
+    }
+    function resetEx11() { clearInputStyles('ex11'); }
+    function solveEx11() {
+        document.getElementById('ex11_1').value = 'учит';
+        document.getElementById('ex11_2').value = 'учится';
+        checkEx11();
+    }
+
+    /* --- ÜBUNG 12 --- */
+    function checkEx12() {
+        const val = document.getElementById('ex12_1').value;
+        markInput('ex12_1', val === 'учить');
+        
+        if(val === 'учить') setFeedback('msg12', true, 'Genau. "Учить" ist für das Auswendiglernen.');
+        else setFeedback('msg12', false, 'Nicht ganz. Gesucht ist das Verb für "Auswendiglernen" im Infinitiv.');
+    }
+    function resetEx12() { clearInputStyles('ex12'); }
+    function solveEx12() {
+        document.getElementById('ex12_1').value = 'учить';
+        checkEx12();
+    }
+
+</script>
+
+</body>
+</html>
