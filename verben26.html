@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Drag & Drop Kategorisierung</title>
+    <!-- Polyfill für Touch-Geräte (Wichtig für Smartphones/Tablets) -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --box-border: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        /* Exercise Card Styles */
+        .exercise-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Source Container (Der Pool an Wörtern) */
+        .source-container {
+            background-color: #e8ecef;
+            border: 2px solid #dfe6e9;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 60px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        /* Draggable Items */
+        .draggable {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: grab;
+            user-select: none;
+            font-size: 1.05em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        /* Target Columns Layout */
+        .columns-wrapper {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .target-column {
+            flex: 1;
+            background-color: #f9f9f9;
+            border: 2px dashed var(--box-border);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 200px;
+            transition: background-color 0.3s;
+        }
+
+        .target-column h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+            font-size: 1.1em;
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            width: 100%;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .target-column h3 span {
+            display: block;
+            font-size: 0.8em;
+            font-weight: normal;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .target-column.drag-over {
+            background-color: #e3f2fd;
+            border-color: var(--primary-color);
+        }
+
+        /* Feedback Colors inside items */
+        .item-correct {
+            background-color: var(--success-color) !important;
+        }
+        .item-incorrect {
+            background-color: var(--error-color) !important;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: background 0.3s;
+            color: white;
+            min-width: 120px;
+        }
+
+        .btn-check { background-color: var(--primary-color); }
+        .btn-check:hover { background-color: #2980b9; }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-reset:hover { background-color: #7f8c8d; }
+
+        .btn-solve { background-color: #f39c12; }
+        .btn-solve:hover { background-color: #d35400; }
+
+        .feedback-msg {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        /* RESPONSIVE DESIGN (Smartphone/Tablet) */
+        @media (max-width: 768px) {
+            .columns-wrapper {
+                flex-direction: column; /* Stapeln statt nebeneinander */
+            }
+
+            .target-column {
+                min-height: 120px; /* Etwas kleiner auf Mobile, da gestapelt */
+                width: auto; /* Volle Breite */
+            }
+
+            .draggable {
+                font-size: 1em; /* Etwas kleinerer Text für mehr Platz */
+                padding: 10px 15px; /* Größere Touch-Fläche */
+            }
+
+            h1 { font-size: 1.5em; }
+            
+            button {
+                width: 100%; /* Buttons auf volle Breite */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Verben zuordnen</h1>
+    <p class="instruction">
+        Ziehen Sie die Wörter in den richtigen Kasten. Achten Sie auf die Frage und den Fall!
+    </p>
+
+    <div class="exercise-card">
+        
+        <!-- WORT-POOL -->
+        <div class="source-container" id="source-pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <!-- Items werden per JS hier eingefügt -->
+        </div>
+
+        <!-- ZIEL-CONTAINER -->
+        <div class="columns-wrapper">
+            
+            <!-- Spalte 1: WAS? (Akkusativ) -->
+            <div class="target-column" id="target-acc" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h3>
+                    Что? (Was?)
+                    <span>für: учить / изучать<br>(Akkusativ)</span>
+                </h3>
+                <!-- Hier landen die Items -->
+            </div>
+
+            <!-- Spalte 2: WO? (Präpositiv) -->
+            <div class="target-column" id="target-prep" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h3>
+                    Где? (Wo?)
+                    <span>für: учиться<br>(Präpositiv)</span>
+                </h3>
+            </div>
+
+            <!-- Spalte 3: WOMIT? (Instrumental) -->
+            <div class="target-column" id="target-instr" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h3>
+                    Чем? (Womit?)
+                    <span>für: заниматься<br>(Instrumental)</span>
+                </h3>
+            </div>
+
+        </div>
+
+        <div class="feedback-msg" id="feedback"></div>
+
+        <div class="controls">
+            <button class="btn-check" onclick="checkAnswers()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetExercise()">Zurücksetzen</button>
+            <button class="btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DATEN: Die Wörter und ihre korrekte Ziel-ID
+    // target-acc = Akkusativ (Was?)
+    // target-prep = Präpositiv (Wo?)
+    // target-instr = Instrumental (Womit?)
+    const wordsData = [
+        { text: "новые слова", target: "target-acc" },
+        { text: "в школе", target: "target-prep" },
+        { text: "спортом", target: "target-instr" },
+        { text: "стихотворение", target: "target-acc" },
+        { text: "в университете", target: "target-prep" },
+        { text: "музыкой", target: "target-instr" },
+        { text: "физику", target: "target-acc" },
+        { text: "на курсах", target: "target-prep" },
+        { text: "танцами", target: "target-instr" },
+        { text: "русскую литературу", target: "target-acc" },
+        { text: "дома", target: "target-prep" }, /* дома ist ein Adverb, antwortet aber auf wo? und passt zu учиться/заниматься wo */
+        { text: "русским языком", target: "target-instr" }
+    ];
+
+    const sourcePool = document.getElementById('source-pool');
+
+    // INIT: Aufgabe beim Laden starten
+    window.onload = function() {
+        initGame();
+    };
+
+    function initGame() {
+        sourcePool.innerHTML = '';
+        document.getElementById('target-acc').innerHTML = '<h3>Что? (Was?)<span>für: учить / изучать<br>(Akkusativ)</span></h3>';
+        document.getElementById('target-prep').innerHTML = '<h3>Где? (Wo?)<span>für: учиться<br>(Präpositiv)</span></h3>';
+        document.getElementById('target-instr').innerHTML = '<h3>Чем? (Womit?)<span>für: заниматься<br>(Instrumental)</span></h3>';
+        
+        document.getElementById('feedback').textContent = '';
+
+        // Wörter mischen
+        const shuffled = [...wordsData].sort(() => 0.5 - Math.random());
+
+        // Elemente erstellen
+        shuffled.forEach((item, index) => {
+            const el = document.createElement('span');
+            el.className = 'draggable';
+            el.id = 'drag-' + index;
+            el.draggable = true;
+            el.textContent = item.text;
+            el.dataset.targetId = item.target; // Speichern, wohin es gehört
+            
+            // Event Listener für Desktop Drag
+            el.addEventListener('dragstart', drag);
+            
+            sourcePool.appendChild(el);
+        });
+    }
+
+    /* DRAG & DROP FUNKTIONEN */
+    function allowDrop(ev) {
+        ev.preventDefault();
+        // Visuelles Feedback beim Drüberziehen (optional)
+        if (ev.target.classList.contains('target-column')) {
+            ev.target.classList.add('drag-over');
+        }
+    }
+
+    // Wenn man die Zone verlässt, Highlight entfernen
+    document.addEventListener('dragleave', function(ev) {
+        if (ev.target.classList.contains('target-column')) {
+            ev.target.classList.remove('drag-over');
+        }
+    });
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const draggedElement = document.getElementById(data);
+        
+        // Ziel finden (Bubble up, falls man auf ein h3 oder ein anderes Item droppt)
+        let target = ev.target;
+        while (!target.classList.contains('target-column') && !target.classList.contains('source-container')) {
+            target = target.parentNode;
+            if (!target) return; // Sicherheitsabbruch
+        }
+
+        // Highlight entfernen
+        target.classList.remove('drag-over');
+
+        // Element verschieben
+        target.appendChild(draggedElement);
+        
+        // Farbe zurücksetzen falls es markiert war
+        draggedElement.classList.remove('item-correct', 'item-incorrect');
+    }
+
+    /* BUTTON LOGIK */
+
+    function checkAnswers() {
+        const draggables = document.querySelectorAll('.draggable');
+        let allCorrect = true;
+        let placedCount = 0;
+
+        draggables.forEach(el => {
+            const parent = el.parentElement;
+            
+            // Wenn noch im Source Pool -> Neutral
+            if (parent.id === 'source-pool') {
+                el.classList.remove('item-correct', 'item-incorrect');
+                allCorrect = false; 
+                return;
+            }
+
+            placedCount++;
+
+            // Prüfen ob Parent ID mit Dataset Target übereinstimmt
+            if (parent.id === el.dataset.targetId) {
+                el.classList.add('item-correct');
+                el.classList.remove('item-incorrect');
+            } else {
+                el.classList.add('item-incorrect');
+                el.classList.remove('item-correct');
+                allCorrect = false;
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        if (placedCount === 0) {
+            feedback.textContent = "Bitte ziehen Sie zuerst die Wörter in die Kästen.";
+            feedback.style.color = "var(--secondary-color)";
+        } else if (allCorrect && placedCount === wordsData.length) {
+            feedback.textContent = "Hervorragend! Alles richtig zugeordnet.";
+            feedback.style.color = "var(--success-color)";
+        } else {
+            feedback.textContent = "Einige Zuordnungen sind noch falsch oder fehlen.";
+            feedback.style.color = "var(--error-color)";
+        }
+    }
+
+    function resetExercise() {
+        initGame(); // Einfach neu initialisieren
+    }
+
+    function showSolution() {
+        // Erst alles zurücksetzen (Farben weg)
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "Lösung angezeigt.";
+        feedback.style.color = "var(--primary-color)";
+
+        // Alle Elemente holen
+        const draggables = document.querySelectorAll('.draggable');
+        
+        draggables.forEach(el => {
+            const correctTargetId = el.dataset.targetId;
+            const targetContainer = document.getElementById(correctTargetId);
+            
+            // Farbe entfernen
+            el.classList.remove('item-correct', 'item-incorrect');
+            
+            // In den richtigen Container verschieben
+            targetContainer.appendChild(el);
+            
+            // Optional: Als richtig markieren
+            el.classList.add('item-correct');
+        });
+    }
+
+</script>
+
+</body>
+</html>
