@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Fehleranalyse</title>
+
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --neutral-btn: #ecf0f1;
+            --text-on-neutral: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* --- EXERCISE LIST --- */
+        .exercise-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sentence-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            border-left: 6px solid #bdc3c7; /* Default Neutral */
+            transition: border-left-color 0.3s;
+        }
+
+        .sentence-card.status-correct { border-left-color: var(--success-color); }
+        .sentence-card.status-wrong { border-left-color: var(--error-color); }
+
+        .sentence-text {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+        }
+
+        /* Buttons Container */
+        .decision-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .btn-decision {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s, background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--text-on-neutral);
+            background-color: var(--neutral-btn);
+        }
+
+        .btn-decision:hover {
+            opacity: 0.9;
+        }
+
+        /* Specific Button Styles */
+        .btn-true:hover { background-color: #d4edda; }
+        .btn-false:hover { background-color: #f8d7da; }
+
+        /* Active States (after click) */
+        .btn-decision.user-selected {
+            border: 2px solid var(--primary-color);
+        }
+
+        /* Result States */
+        .btn-true.result-correct { background-color: var(--success-color); color: white; }
+        .btn-false.result-correct { background-color: var(--success-color); color: white; } /* If "False" was the correct answer */
+        
+        .btn-decision.result-wrong { background-color: var(--error-color); color: white; opacity: 0.6; }
+
+
+        /* Feedback Section */
+        .feedback-box {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none; /* Hidden initially */
+            font-size: 0.95em;
+        }
+
+        .feedback-box.visible { display: block; animation: fadeIn 0.3s; }
+
+        .correction-line {
+            display: block;
+            margin-top: 5px;
+            font-weight: bold;
+            color: var(--success-color);
+        }
+        
+        .correction-label {
+            color: #7f8c8d;
+            font-weight: normal;
+            font-size: 0.9em;
+        }
+
+        /* Global Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-bottom: 40px;
+        }
+
+        .global-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            background-color: var(--primary-color);
+            min-width: 150px;
+        }
+        
+        .global-btn:hover { background-color: #2980b9; }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .decision-buttons {
+                flex-direction: column; /* Buttons untereinander auf Handy */
+                gap: 10px;
+            }
+            .btn-decision {
+                width: 100%;
+            }
+            .sentence-text {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Fehleranalyse: Richtig oder Falsch?</h1>
+    <p class="instruction">
+        Lesen Sie die Sätze. Entscheiden Sie: Ist der Satz grammatikalisch und stilistisch korrekt?
+    </p>
+
+    <div class="exercise-list" id="exercise-list">
+        <!-- JS generiert hier die Karten -->
+    </div>
+
+    <div class="controls">
+        <button class="global-btn" onclick="resetAll()">Alle zurücksetzen</button>
+    </div>
+</div>
+
+<script>
+    // DATEN: Die Sätze
+    // isCorrect: true (Satz ist richtig) oder false (Satz ist falsch)
+    // correction: Der richtige Satz (nur nötig, wenn isCorrect = false)
+    // explanation: Warum ist das so?
+    const sentences = [
+        {
+            id: 1,
+            text: "Я учу в школе.",
+            isCorrect: false,
+            correction: "Я учусь в школе.",
+            explanation: "Wenn man sagt, wo man Schüler ist (Ort), benutzt man <b>учиться</b>."
+        },
+        {
+            id: 2,
+            text: "Антон изучает математику.",
+            isCorrect: true,
+            correction: "",
+            explanation: "Richtig! 'Mathematik' ist eine Wissenschaft/ein Fach, daher passt <b>изучать</b> (oder <i>учить</i> für Hausaufgaben, aber <i>изучать</i> ist stilistisch sehr gut)."
+        },
+        {
+            id: 3,
+            text: "Мы учимся новые слова.",
+            isCorrect: false,
+            correction: "Мы учим новые слова.",
+            explanation: "<b>Учиться</b> kann kein Objekt im Akkusativ haben. Für 'etwas auswendig lernen' nutzen wir <b>учить</b>."
+        },
+        {
+            id: 4,
+            text: "Студенты занимаются в библиотеке.",
+            isCorrect: true,
+            correction: "",
+            explanation: "Korrekt! <b>Заниматься</b> bedeutet hier: Zeit mit Lernen verbringen, Hausaufgaben machen."
+        },
+        {
+            id: 5,
+            text: "Мой друг учит в МГУ.",
+            isCorrect: false,
+            correction: "Мой друг учится в МГУ.",
+            explanation: "Er ist Student an einer Institution (Ort) -> <b>учиться</b>."
+        },
+        {
+            id: 6,
+            text: "Я хочу научиться плавать.",
+            isCorrect: true,
+            correction: "",
+            explanation: "Richtig! <b>Научиться</b> + Infinitiv bedeutet, eine Fähigkeit zu erwerben (wie 'плавать')."
+        },
+        {
+            id: 7,
+            text: "Она изучает читать.",
+            isCorrect: false,
+            correction: "Она учится читать.",
+            explanation: "<b>Изучать</b> wird nur mit Substantiven (Wissenschaften) benutzt, nie mit Verben. Eine Tätigkeit lernen = <b>учиться</b> + Infinitiv."
+        },
+        {
+            id: 8,
+            text: "Мы занимаемся спортом.",
+            isCorrect: true,
+            correction: "",
+            explanation: "Korrekt! <b>Заниматься</b> verlangt den Instrumental (спортом)."
+        },
+        {
+            id: 9,
+            text: "Завтра я буду учиться стихотворение.",
+            isCorrect: false,
+            correction: "Завтра я буду учить стихотворение.",
+            explanation: "Ein Gedicht (Akkusativ Objekt) auswendig lernen -> <b>учить</b>."
+        }
+    ];
+
+    // INIT
+    window.onload = function() {
+        renderList();
+    };
+
+    function renderList() {
+        const container = document.getElementById('exercise-list');
+        container.innerHTML = '';
+
+        sentences.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'sentence-card';
+            card.id = `card-${index}`;
+
+            // HTML Struktur
+            card.innerHTML = `
+                <div class="sentence-text">${item.text}</div>
+                
+                <div class="decision-buttons" id="btns-${index}">
+                    <button class="btn-decision btn-true" onclick="checkAnswer(${index}, true)">
+                        ✅ Richtig
+                    </button>
+                    <button class="btn-decision btn-false" onclick="checkAnswer(${index}, false)">
+                        ❌ Falsch
+                    </button>
+                </div>
+
+                <div class="feedback-box" id="feedback-${index}">
+                    <div id="msg-${index}"></div>
+                    ${!item.isCorrect ? `
+                        <div class="correction-line">
+                            <span class="correction-label">Korrektur:</span> 
+                            ${item.correction}
+                        </div>` 
+                    : ''}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function checkAnswer(index, userSaysTrue) {
+        const item = sentences[index];
+        const feedbackBox = document.getElementById(`feedback-${index}`);
+        const msgDiv = document.getElementById(`msg-${index}`);
+        const card = document.getElementById(`card-${index}`);
+        const btnsContainer = document.getElementById(`btns-${index}`);
+        
+        // Buttons sperren (verhindert mehrfaches Klicken)
+        const buttons = btnsContainer.querySelectorAll('button');
+        buttons.forEach(b => b.disabled = true);
+
+        // Visuelle Auswertung
+        const btnTrue = buttons[0];
+        const btnFalse = buttons[1];
+
+        const isUserCorrect = (userSaysTrue === item.isCorrect);
+
+        if (isUserCorrect) {
+            // User hat richtig getippt
+            card.classList.add('status-correct');
+            msgDiv.innerHTML = `<strong style="color:var(--success-color)">Ausgezeichnet! Das stimmt.</strong><br>${item.explanation}`;
+            
+            // Den geklickten Button grün färben
+            if(userSaysTrue) btnTrue.classList.add('result-correct');
+            else btnFalse.classList.add('result-correct');
+
+        } else {
+            // User lag falsch
+            card.classList.add('status-wrong');
+            msgDiv.innerHTML = `<strong style="color:var(--error-color)">Leider nicht ganz.</strong><br>${item.explanation}`;
+            
+            // Den geklickten Button rot färben (als Fehler)
+            if(userSaysTrue) btnTrue.classList.add('result-wrong');
+            else btnFalse.classList.add('result-wrong');
+        }
+
+        feedbackBox.classList.add('visible');
+    }
+
+    function resetAll() {
+        renderList();
+    }
+
+</script>
+
+</body>
+</html>
