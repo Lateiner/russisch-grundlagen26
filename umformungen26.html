@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Satz-Transformation</title>
+
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --slot-bg: #f8f9fa;
+            --word-bg: #e1e8ed;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* --- EXERCISE CARD --- */
+        .trans-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .source-sentence {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+            background-color: #eaf2f8;
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+
+        .task-arrow {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .verb-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* --- CONSTRUCTION AREA --- */
+        .construction-area {
+            min-height: 60px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            background-color: var(--slot-bg);
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        .construction-area.correct {
+            border-color: var(--success-color);
+            background-color: #d4edda;
+        }
+
+        .construction-area.wrong {
+            border-color: var(--error-color);
+            background-color: #f8d7da;
+        }
+
+        .construction-area:empty::before {
+            content: "Klicken Sie auf die Wörter unten...";
+            color: #bdc3c7;
+            font-style: italic;
+        }
+
+        /* --- WORD BANK --- */
+        .word-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .word-chip {
+            background-color: var(--word-bg);
+            color: var(--secondary-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            user-select: none;
+            transition: transform 0.1s, background-color 0.2s;
+            border: 1px solid #ccc;
+        }
+
+        .word-chip:hover {
+            background-color: #d6e0e5;
+            transform: translateY(-2px);
+        }
+
+        .word-chip:active {
+            transform: scale(0.95);
+        }
+
+        /* --- CARD FOOTER --- */
+        .card-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .feedback-text {
+            font-weight: bold;
+            font-size: 1em;
+            display: none; /* Hidden initially */
+        }
+        
+        .check-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .check-btn:hover { background-color: #34495e; }
+
+        /* GLOBAL CONTROLS */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-bottom: 40px;
+        }
+
+        .global-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            min-width: 150px;
+        }
+        
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: #f39c12; }
+        .global-btn:hover { opacity: 0.9; }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .word-chip {
+                padding: 10px 14px; /* Größer für Touch */
+                font-size: 1em;
+            }
+            .task-arrow {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .card-footer {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Transformationsübungen</h1>
+    <p class="instruction">
+        Formen Sie den Satz um, indem Sie das angegebene Verb benutzen. <br>
+        Klicken Sie auf die Wörter, um den neuen Satz zu bauen.
+    </p>
+
+    <div id="exercise-list">
+        <!-- JS generiert hier die Karten -->
+    </div>
+
+    <div class="controls">
+        <button class="global-btn btn-reset" onclick="resetAll()">Alles zurücksetzen</button>
+        <button class="global-btn btn-solve" onclick="solveAll()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // DATEN: Die Übungen
+    // 'source': Der Ausgangssatz
+    // 'targetVerb': Das Verb, das genutzt werden soll
+    // 'solution': Der korrekte Zielsatz (Wortreihenfolge ist wichtig für einfachen String-Vergleich)
+    // 'parts': Die Wörter, die im Pool liegen (inkl. falscher Wörter oder einfach nur die richtigen gemischt)
+    const exercises = [
+        {
+            id: 0,
+            source: "Я студент МГУ.",
+            targetVerb: "учиться",
+            solution: "Я учусь в МГУ.",
+            parts: ["Я", "учусь", "в", "МГУ.", "учу"] 
+            // "учу" ist Distraktor (falsches Wort)
+        },
+        {
+            id: 1,
+            source: "Анна - студентка исторического факультета.",
+            targetVerb: "изучать",
+            solution: "Анна изучает историю.",
+            parts: ["Анна", "изучает", "учится", "историю.", "в"]
+        },
+        {
+            id: 2,
+            source: "Мы делаем домашнее задание по физике.",
+            targetVerb: "заниматься",
+            solution: "Мы занимаемся физикой.",
+            parts: ["Мы", "занимаемся", "физикой.", "физику", "учим"]
+        },
+        {
+            id: 3,
+            source: "Я не умею плавать.",
+            targetVerb: "учиться",
+            solution: "Я учусь плавать.",
+            parts: ["Я", "учусь", "плавать.", "учу", "плаваю"]
+        },
+        {
+            id: 4,
+            source: "Антон учит новые слова.",
+            targetVerb: "выучить",
+            solution: "Антон хочет выучить слова.", 
+            // Hier etwas komplexer: Kontextwechsel zu Resultat/Wunsch oder einfach Aspekt
+            // Vereinfachung für A2: "Антон выучил слова." (Resultat)
+            // Nehmen wir: "Антон выучил новые слова."
+            solution: "Антон выучил новые слова.",
+            parts: ["Антон", "выучил", "новые", "слова.", "учил"]
+        },
+        {
+            id: 5,
+            source: "Она преподаватель русского языка.",
+            targetVerb: "учить (кого? чему?)",
+            solution: "Она учит студентов русскому языку.",
+            parts: ["Она", "учит", "студентов", "русскому", "языку.", "учится"]
+        }
+    ];
+
+    // Status speichern: Welche Wörter sind gerade im Satzbereich?
+    let userState = exercises.map(() => []);
+
+    // INIT
+    window.onload = function() {
+        renderList();
+    };
+
+    function renderList() {
+        const container = document.getElementById('exercise-list');
+        container.innerHTML = '';
+
+        exercises.forEach((ex, index) => {
+            const card = document.createElement('div');
+            card.className = 'trans-card';
+            card.id = `card-${index}`;
+
+            // HTML Struktur
+            card.innerHTML = `
+                <div class="source-sentence">${ex.source}</div>
+                
+                <div class="task-arrow">
+                    <span>⬇ Formen Sie um mit:</span>
+                    <span class="verb-badge">${ex.targetVerb}</span>
+                </div>
+
+                <div class="construction-area" id="area-${index}"></div>
+
+                <div class="word-bank" id="bank-${index}"></div>
+
+                <div class="card-footer">
+                    <div class="feedback-text" id="feedback-${index}"></div>
+                    <button class="check-btn" onclick="checkExercise(${index})">Überprüfen</button>
+                </div>
+            `;
+            container.appendChild(card);
+            
+            // Wortbank initial befüllen (gemischt)
+            populateWordBank(index, ex.parts, true); // true = shuffle
+        });
+    }
+
+    // Füllt die Wortbank oder stellt den Status wieder her
+    function populateWordBank(index, words, shuffle) {
+        const bank = document.getElementById(`bank-${index}`);
+        bank.innerHTML = '';
+        
+        let wordsToRender = [...words];
+        if (shuffle) {
+            wordsToRender.sort(() => Math.random() - 0.5);
+        }
+
+        wordsToRender.forEach(word => {
+            createWordChip(word, bank, index, 'bank');
+        });
+    }
+
+    // Erstellt einen klickbaren Wort-Chip
+    function createWordChip(text, parent, index, location) {
+        const chip = document.createElement('div');
+        chip.className = 'word-chip';
+        chip.textContent = text;
+        
+        chip.onclick = function() {
+            moveWord(text, chip, index, location);
+        };
+        
+        parent.appendChild(chip);
+    }
+
+    // Bewegt Wörter zwischen Bank und Area
+    function moveWord(text, element, index, currentLocation) {
+        const area = document.getElementById(`area-${index}`);
+        const bank = document.getElementById(`bank-${index}`);
+        const feedback = document.getElementById(`feedback-${index}`);
+        
+        // Feedback ausblenden bei Änderung
+        feedback.style.display = 'none';
+        area.className = 'construction-area'; // Reset colors
+
+        if (currentLocation === 'bank') {
+            // Von Bank nach Area
+            element.remove();
+            createWordChip(text, area, index, 'area');
+            userState[index].push(text);
+        } else {
+            // Von Area zurück in Bank
+            element.remove();
+            createWordChip(text, bank, index, 'bank');
+            // Aus State entfernen (nur das erste Vorkommen dieses Wortes)
+            const i = userState[index].indexOf(text);
+            if (i > -1) userState[index].splice(i, 1);
+        }
+    }
+
+    // Überprüfung
+    function checkExercise(index) {
+        const ex = exercises[index];
+        const currentSentence = userState[index].join(' ');
+        const area = document.getElementById(`area-${index}`);
+        const feedback = document.getElementById(`feedback-${index}`);
+
+        feedback.style.display = 'block';
+
+        if (currentSentence === ex.solution) {
+            area.className = 'construction-area correct';
+            feedback.textContent = "✅ Richtig!";
+            feedback.style.color = "var(--success-color)";
+        } else {
+            area.className = 'construction-area wrong';
+            feedback.textContent = "❌ Noch nicht ganz.";
+            feedback.style.color = "var(--error-color)";
+        }
+    }
+
+    // Alles zurücksetzen
+    function resetAll() {
+        userState = exercises.map(() => []);
+        renderList();
+    }
+
+    // Lösungen anzeigen
+    function solveAll() {
+        // Reset user state first to clean UI
+        userState = exercises.map(() => []);
+        
+        exercises.forEach((ex, index) => {
+            const area = document.getElementById(`area-${index}`);
+            const bank = document.getElementById(`bank-${index}`);
+            const feedback = document.getElementById(`feedback-${index}`);
+
+            // Clear visual elements
+            area.innerHTML = '';
+            bank.innerHTML = '';
+            
+            // Set solution words into area
+            const solutionWords = ex.solution.split(' ');
+            solutionWords.forEach(word => {
+                // Erstelle Chip im Area (nicht klickbar für Lösung, um Verwirrung zu vermeiden? 
+                // Doch klickbar, damit man sieht wie es funktioniert)
+                const chip = document.createElement('div');
+                chip.className = 'word-chip';
+                chip.textContent = word;
+                // Cursor default, damit man nicht aus Versehen die Lösung zerstört
+                chip.style.cursor = 'default'; 
+                area.appendChild(chip);
+            });
+
+            // Update internal state just in case
+            userState[index] = [...solutionWords];
+
+            // Mark as correct visually
+            area.className = 'construction-area correct';
+            feedback.style.display = 'block';
+            feedback.textContent = "✅ Lösung angezeigt.";
+            feedback.style.color = "var(--primary-color)";
+        });
+    }
+
+</script>
+
+</body>
+</html>
