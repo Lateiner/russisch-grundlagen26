@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Drill: Formen & Fälle</title>
+
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --hint-bg: #f39c12;
+            --hint-text: #fff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* --- DRILL LIST --- */
+        .drill-card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .drill-item {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap; /* Wichtig für Mobile */
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            gap: 10px;
+        }
+
+        .drill-item:last-child {
+            border-bottom: none;
+        }
+
+        .sentence-part {
+            font-size: 1.15em;
+        }
+
+        /* Dropdown Styling */
+        select.verb-select {
+            padding: 8px 12px;
+            font-size: 1em;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: border-color 0.3s, background-color 0.3s;
+            min-width: 120px;
+        }
+
+        select.verb-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Feedback States */
+        select.verb-select.correct {
+            border-color: var(--success-color);
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        select.verb-select.incorrect {
+            border-color: var(--error-color);
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Hint Badge (Der Fall-Hinweis) */
+        .hint-badge {
+            background-color: var(--hint-bg);
+            color: var(--hint-text);
+            font-size: 0.85em;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-left: auto; /* Schiebt Badge nach rechts auf Desktop */
+        }
+
+        /* Feedback Text under each item (hidden by default) */
+        .item-feedback {
+            width: 100%;
+            font-size: 0.9em;
+            color: var(--error-color);
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* Controls */
+        .feedback-msg {
+            text-align: center;
+            margin-top: 25px;
+            font-weight: bold;
+            min-height: 24px;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            color: white;
+            min-width: 140px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-check { background-color: var(--primary-color); }
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: #f39c12; }
+        button:hover { opacity: 0.9; }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .drill-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .hint-badge {
+                margin-left: 0; /* Badge linksbündig auf Mobile */
+                font-size: 0.8em;
+                background-color: #e0e0e0; /* Dezenter auf Mobile */
+                color: #555;
+            }
+
+            select.verb-select {
+                width: 100%; /* Volle Breite für einfaches Tippen */
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Grammatik-Drill: Formen & Fälle</h1>
+    <p class="instruction">
+        Achten Sie auf den Hinweis in Klammern (Fall/Frage) und wählen Sie das Verb, das dieses Objekt oder diesen Ort verlangt.
+    </p>
+
+    <div class="drill-card" id="drill-container">
+        <!-- Items werden per JS generiert -->
+    </div>
+
+    <div class="feedback-msg" id="global-feedback"></div>
+
+    <div class="controls">
+        <button class="btn-check" onclick="checkAll()">Überprüfen</button>
+        <button class="btn-reset" onclick="resetAll()">Zurücksetzen</button>
+        <button class="btn-solve" onclick="solveAll()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // DATEN: 10 Drill-Sätze
+    // Wir nutzen Dropdowns, um Tippfehler (kyrillisch) zu vermeiden, wie gewünscht.
+    const drills = [
+        {
+            pre: "Я", 
+            post: "математику.", 
+            hint: "Was? (Akkusativ)", 
+            correct: "учу", 
+            options: ["учу", "учусь", "занимаюсь"]
+        },
+        {
+            pre: "Я", 
+            post: "в школе.", 
+            hint: "Wo? (Präpositiv)", 
+            correct: "учусь", 
+            options: ["учу", "учусь", "изучаю"]
+        },
+        {
+            pre: "Студент", 
+            post: "физику.", 
+            hint: "Was? (Wissenschaft)", 
+            correct: "изучает", 
+            options: ["учится", "изучает", "занимается"]
+        },
+        {
+            pre: "Мы", 
+            post: "спортом.", 
+            hint: "Womit? (Instrumental)", 
+            correct: "занимаемся", 
+            options: ["учим", "учимся", "занимаемся"]
+        },
+        {
+            pre: "Они", 
+            post: "в библиотеке.", 
+            hint: "Wo? (Tätigkeit ausüben)", 
+            correct: "занимаются", 
+            options: ["учат", "учатся", "занимаются"]
+        },
+        {
+            pre: "Ты", 
+            post: "новые слова?", 
+            hint: "Was? (Memorieren)", 
+            correct: "учишь", 
+            options: ["учишь", "учишься", "изучаешь"]
+        },
+        {
+            pre: "Анна", 
+            post: "хорошо.", 
+            hint: "Wie? (Qualität)", 
+            correct: "учится", 
+            options: ["учит", "учится", "изучает"]
+        },
+        {
+            pre: "Учитель", 
+            post: "детей.", 
+            hint: "Wen? (Akkusativ)", 
+            correct: "учит", 
+            options: ["учит", "учится", "занимается"]
+        },
+        {
+            pre: "Вы", 
+            post: "русским языком?", 
+            hint: "Womit? (Instrumental)", 
+            correct: "занимаетесь", 
+            options: ["учите", "изучаете", "занимаетесь"]
+        },
+        {
+            pre: "Мы", 
+            post: "стихи.", 
+            hint: "Was? (Auswendig lernen)", 
+            correct: "учим", 
+            options: ["учим", "учимся", "занимаемся"]
+        }
+    ];
+
+    // INIT
+    window.onload = function() {
+        renderDrills();
+    };
+
+    function renderDrills() {
+        const container = document.getElementById('drill-container');
+        container.innerHTML = '';
+
+        drills.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'drill-item';
+
+            // HTML Struktur
+            // 1. Satzteil Vorne
+            // 2. Select
+            // 3. Satzteil Hinten
+            // 4. Badge
+            
+            // Dropdown bauen
+            let optionsHTML = `<option value="">---</option>`;
+            item.options.forEach(opt => {
+                optionsHTML += `<option value="${opt}">${opt}</option>`;
+            });
+
+            div.innerHTML = `
+                <span class="sentence-part">${item.pre}</span>
+                <select class="verb-select" id="sel-${index}">
+                    ${optionsHTML}
+                </select>
+                <span class="sentence-part">${item.post}</span>
+                <span class="hint-badge">${item.hint}</span>
+                <div class="item-feedback" id="feed-${index}"></div>
+            `;
+
+            container.appendChild(div);
+        });
+    }
+
+    /* LOGIK */
+
+    function checkAll() {
+        let correctCount = 0;
+        let allSelected = true;
+
+        drills.forEach((item, index) => {
+            const sel = document.getElementById(`sel-${index}`);
+            const feedback = document.getElementById(`feed-${index}`);
+            const val = sel.value;
+
+            if (val === "") {
+                allSelected = false;
+                sel.classList.remove('correct', 'incorrect');
+                return;
+            }
+
+            if (val === item.correct) {
+                sel.classList.add('correct');
+                sel.classList.remove('incorrect');
+                feedback.style.display = 'none';
+                correctCount++;
+            } else {
+                sel.classList.add('incorrect');
+                sel.classList.remove('correct');
+                // Optional: Feedback Text zeigen
+                // feedback.style.display = 'block';
+                // feedback.textContent = "Falsch.";
+            }
+        });
+
+        const globalFeed = document.getElementById('global-feedback');
+        
+        if (!allSelected) {
+            globalFeed.textContent = "Bitte füllen Sie alle Lücken aus.";
+            globalFeed.style.color = "var(--secondary-color)";
+        } else if (correctCount === drills.length) {
+            globalFeed.textContent = "Perfekt! Sie beherrschen die Rektion der Verben.";
+            globalFeed.style.color = "var(--success-color)";
+        } else {
+            globalFeed.textContent = `Sie haben ${correctCount} von ${drills.length} Sätzen richtig.`;
+            globalFeed.style.color = "var(--error-color)";
+        }
+    }
+
+    function resetAll() {
+        drills.forEach((item, index) => {
+            const sel = document.getElementById(`sel-${index}`);
+            sel.value = "";
+            sel.classList.remove('correct', 'incorrect');
+            document.getElementById(`feed-${index}`).style.display = 'none';
+        });
+        document.getElementById('global-feedback').textContent = "";
+    }
+
+    function solveAll() {
+        drills.forEach((item, index) => {
+            const sel = document.getElementById(`sel-${index}`);
+            sel.value = item.correct;
+            sel.classList.remove('incorrect');
+            sel.classList.add('correct');
+        });
+        
+        const globalFeed = document.getElementById('global-feedback');
+        globalFeed.textContent = "Lösung angezeigt.";
+        globalFeed.style.color = "var(--primary-color)";
+    }
+
+</script>
+
+</body>
+</html>
