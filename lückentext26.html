@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Multiple Choice (10 Fragen)</title>
+
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --select-bg: #eaf2f8;
+            --hover-bg: #d4e6f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        p.instruction {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* --- QUESTION CARDS --- */
+        .question-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border-left: 5px solid #bdc3c7; /* Neutraler Status */
+            transition: border-color 0.3s;
+        }
+
+        .question-card.solved-correct { border-left-color: var(--success-color); }
+        .question-card.solved-incorrect { border-left-color: var(--error-color); }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .question-number {
+            font-weight: bold;
+            color: #95a5a6;
+            font-size: 0.9em;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .gap {
+            display: inline-block;
+            min-width: 60px;
+            border-bottom: 2px solid var(--secondary-color);
+            text-align: center;
+            color: var(--primary-color);
+            padding: 0 5px;
+            font-weight: bold;
+        }
+
+        /* --- OPTIONS GRID --- */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Desktop: 3 nebeneinander */
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .option-btn {
+            padding: 12px 10px;
+            border: 2px solid #ddd;
+            background-color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s;
+            text-align: center;
+            color: var(--secondary-color);
+            user-select: none;
+        }
+
+        .option-btn:hover {
+            background-color: var(--hover-bg);
+            border-color: var(--primary-color);
+        }
+
+        .option-btn.selected {
+            background-color: var(--select-bg);
+            border-color: var(--primary-color);
+            font-weight: bold;
+            color: var(--primary-color);
+            box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        /* Feedback States */
+        .option-btn.correct {
+            background-color: var(--success-color) !important;
+            border-color: var(--success-color) !important;
+            color: white !important;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--error-color) !important;
+            border-color: var(--error-color) !important;
+            color: white !important;
+            opacity: 0.7;
+        }
+        
+        .options-grid.locked { pointer-events: none; }
+
+        /* --- CARD FOOTER (Check Button per Question) --- */
+        .card-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .explanation {
+            font-size: 0.95em;
+            color: #555;
+            background-color: #f9f9f9;
+            padding: 8px 12px;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        
+        .explanation.visible { display: block; }
+
+        button.local-check-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button.local-check-btn:hover { background-color: #2980b9; }
+        button.local-check-btn:disabled { background-color: #bdc3c7; cursor: default; }
+
+        /* --- GLOBAL CONTROLS --- */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-bottom: 40px;
+        }
+
+        button.global-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            min-width: 150px;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: #f39c12; }
+        
+        button.global-btn:hover { opacity: 0.9; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .option-btn { padding: 15px; }
+            .card-footer { flex-direction: column; align-items: stretch; }
+            button.local-check-btn { width: 100%; }
+            .explanation { margin-right: 0; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Multiple Choice: Verben</h1>
+    <p class="instruction">
+        Wählen Sie das richtige Verb und klicken Sie bei jeder Frage auf "Überprüfen".
+    </p>
+
+    <div id="quiz-container">
+        <!-- Fragen werden per JavaScript hier generiert -->
+    </div>
+
+    <div class="controls">
+        <button class="global-btn btn-reset" onclick="resetAll()">Alles zurücksetzen</button>
+        <button class="global-btn btn-solve" onclick="solveAll()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // DATEN: 10 Fragen
+    const questions = [
+        {
+            id: 1,
+            pre: "Антон", gap: "...", post: "в школе.",
+            options: ["учит", "учится", "изучает"],
+            correct: 1,
+            expl: "Wo? (Ort/Institution) -> учится. Er ist Schüler."
+        },
+        {
+            id: 2,
+            pre: "Я", gap: "...", post: "новые слова каждый день.",
+            options: ["учу", "учусь", "занимаюсь"],
+            correct: 0,
+            expl: "Was? (Akkusativ, Auswendiglernen) -> учу."
+        },
+        {
+            id: 3,
+            pre: "Она глубоко", gap: "...", post: "физику в университете.",
+            options: ["учит", "учится", "изучает"],
+            correct: 2,
+            expl: "Was? (Wissenschaft, tiefgehendes Studium) -> изучает."
+        },
+        {
+            id: 4,
+            pre: "Преподаватель", gap: "...", post: "студентов русскому языку.",
+            options: ["учит", "учится", "занимается"],
+            correct: 0,
+            expl: "Wen? (Jemanden lehren) -> учит."
+        },
+        {
+            id: 5,
+            pre: "Завтра мы будем", gap: "...", post: "в библиотеке.",
+            options: ["изучать", "учить", "заниматься"],
+            correct: 2,
+            expl: "Wo? (Tätigkeit ausüben, Hausaufgaben machen) -> заниматься."
+        },
+        {
+            id: 6,
+            pre: "Мой брат", gap: "...", post: "неплохо.",
+            options: ["учится", "учит", "занимается"],
+            correct: 0,
+            expl: "Wie? (Qualität des Lernens) -> учится."
+        },
+        {
+            id: 7,
+            pre: "Сейчас он", gap: "...", post: "водить машину.",
+            options: ["учится", "учит", "выучит"],
+            correct: 0,
+            expl: "Was tun? (Fähigkeit erwerben + Infinitiv) -> учится."
+        },
+        {
+            id: 8,
+            pre: "Мы часто", gap: "...", post: "спортом.",
+            options: ["учимся", "изучаем", "занимаемся"],
+            correct: 2,
+            expl: "Womit? (Hobby/Sport + Instrumental) -> занимаемся."
+        },
+        {
+            id: 9,
+            pre: "Дети", gap: "...", post: "стихотворение Пушкина.",
+            options: ["учат", "учатся", "занимаются"],
+            correct: 0,
+            expl: "Was? (Text auswendig lernen) -> учат."
+        },
+        {
+            id: 10,
+            pre: "Студенты", gap: "...", post: "историю России.",
+            options: ["занимаются", "учатся", "изучают"],
+            correct: 2,
+            expl: "Was? (Ein Fach als Wissenschaft studieren) -> изучают."
+        }
+    ];
+
+    // Status-Speicher
+    let userSelections = new Array(questions.length).fill(null);
+
+    // INIT
+    window.onload = function() {
+        renderQuiz();
+    };
+
+    function renderQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+
+        questions.forEach((q, index) => {
+            // Card Wrapper
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `card-${index}`;
+
+            // Header (Nummer)
+            const header = document.createElement('div');
+            header.className = 'question-header';
+            header.innerHTML = `<span class="question-number">Frage ${index + 1} von ${questions.length}</span>`;
+
+            // Frage-Text
+            const textDiv = document.createElement('div');
+            textDiv.className = 'question-text';
+            textDiv.innerHTML = `${q.pre} <span class="gap" id="gap-${index}">___</span> ${q.post}`;
+
+            // Optionen Grid
+            const grid = document.createElement('div');
+            grid.className = 'options-grid';
+            grid.id = `grid-${index}`;
+
+            q.options.forEach((opt, optIndex) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.id = `btn-${index}-${optIndex}`;
+                btn.onclick = () => selectOption(index, optIndex);
+                grid.appendChild(btn);
+            });
+
+            // Footer (Erklärung + Check Button)
+            const footer = document.createElement('div');
+            footer.className = 'card-footer';
+
+            const explDiv = document.createElement('div');
+            explDiv.className = 'explanation';
+            explDiv.id = `expl-${index}`;
+            explDiv.innerHTML = `💡 ${q.expl}`;
+
+            const checkBtn = document.createElement('button');
+            checkBtn.className = 'local-check-btn';
+            checkBtn.textContent = 'Überprüfen';
+            checkBtn.id = `check-btn-${index}`;
+            checkBtn.onclick = () => checkQuestion(index);
+
+            footer.appendChild(explDiv);
+            footer.appendChild(checkBtn);
+
+            // Zusammenbauen
+            card.appendChild(header);
+            card.appendChild(textDiv);
+            card.appendChild(grid);
+            card.appendChild(footer);
+            container.appendChild(card);
+        });
+    }
+
+    // --- LOGIK ---
+
+    function selectOption(qIndex, optIndex) {
+        // Verhindern, dass man nach der Lösung noch klickt
+        const grid = document.getElementById(`grid-${qIndex}`);
+        if(grid.classList.contains('locked')) return;
+
+        // Speichern
+        userSelections[qIndex] = optIndex;
+
+        // UI Update (Buttons)
+        const buttons = grid.querySelectorAll('.option-btn');
+        buttons.forEach((btn, idx) => {
+            if (idx === optIndex) btn.classList.add('selected');
+            else btn.classList.remove('selected');
+        });
+
+        // UI Update (Lücke)
+        const gap = document.getElementById(`gap-${qIndex}`);
+        gap.textContent = questions[qIndex].options[optIndex];
+        gap.style.borderBottom = "none";
+    }
+
+    function checkQuestion(qIndex) {
+        const selectedOpt = userSelections[qIndex];
+        
+        // Prüfen, ob etwas ausgewählt wurde
+        if (selectedOpt === null) {
+            // Kleiner visueller Hinweis (Schütteln oder Alert)
+            alert("Bitte wählen Sie zuerst eine Antwort aus.");
+            return;
+        }
+
+        const q = questions[qIndex];
+        const grid = document.getElementById(`grid-${qIndex}`);
+        const card = document.getElementById(`card-${qIndex}`);
+        const btnCheck = document.getElementById(`check-btn-${qIndex}`);
+        const explDiv = document.getElementById(`expl-${qIndex}`);
+        const selectedBtn = document.getElementById(`btn-${qIndex}-${selectedOpt}`);
+        const correctBtn = document.getElementById(`btn-${qIndex}-${q.correct}`);
+
+        // Sperren
+        grid.classList.add('locked');
+        btnCheck.disabled = true;
+        btnCheck.textContent = 'Erledigt';
+
+        if (selectedOpt === q.correct) {
+            // Richtig
+            selectedBtn.classList.remove('selected');
+            selectedBtn.classList.add('correct');
+            card.classList.add('solved-correct');
+            explDiv.innerHTML = "✅ Richtig! " + q.expl;
+            explDiv.classList.add('visible');
+            explDiv.style.color = "var(--success-color)";
+            explDiv.style.backgroundColor = "#d4edda";
+        } else {
+            // Falsch
+            selectedBtn.classList.remove('selected');
+            selectedBtn.classList.add('incorrect');
+            correctBtn.classList.add('correct'); // Richtige Lösung zeigen
+            card.classList.add('solved-incorrect');
+            explDiv.innerHTML = "❌ Leider falsch. " + q.expl;
+            explDiv.classList.add('visible');
+            explDiv.style.color = "var(--error-color)";
+            explDiv.style.backgroundColor = "#f8d7da";
+        }
+    }
+
+    function resetAll() {
+        userSelections.fill(null);
+        renderQuiz();
+    }
+
+    function solveAll() {
+        // Setzt alles zurück und füllt es korrekt aus
+        renderQuiz(); // Clean state
+        
+        questions.forEach((q, index) => {
+            // Auswahl simulieren
+            userSelections[index] = q.correct;
+            
+            // Buttons und Lücken updaten
+            const grid = document.getElementById(`grid-${index}`);
+            grid.classList.add('locked');
+            
+            const correctBtn = document.getElementById(`btn-${index}-${q.correct}`);
+            correctBtn.classList.add('correct');
+            
+            const gap = document.getElementById(`gap-${index}`);
+            gap.textContent = q.options[q.correct];
+            gap.style.borderBottom = "none";
+
+            // Check Button deaktivieren
+            const btnCheck = document.getElementById(`check-btn-${index}`);
+            btnCheck.disabled = true;
+            btnCheck.textContent = 'Gelöst';
+            
+            // Erklärung zeigen
+            const explDiv = document.getElementById(`expl-${index}`);
+            explDiv.innerHTML = "✅ Lösung: " + q.expl;
+            explDiv.classList.add('visible');
+            
+            // Karte markieren
+            document.getElementById(`card-${index}`).classList.add('solved-correct');
+        });
+    }
+
+</script>
+
+</body>
+</html>
