@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Übung: Dialog im Chat</title>
+
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #e5ddd5; /* WhatsApp-ähnlicher Hintergrund */
+            --bubble-left: #ffffff;
+            --bubble-right: #dcf8c6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #dcdcdc;
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px; /* Schmaler für Chat-Optik */
+            margin: 0 auto;
+            background-color: #e5ddd5;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 90vh; /* Fast volle Höhe */
+            max-height: 900px;
+        }
+
+        /* --- HEADER --- */
+        .chat-header {
+            background-color: #075e54;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .header-info h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+        
+        .header-info p {
+            margin: 0;
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        /* --- CHAT AREA --- */
+        .chat-area {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-image: linear-gradient(#e5ddd5 1px, transparent 1px), linear-gradient(90deg, #e5ddd5 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            font-size: 1.05em;
+        }
+
+        .message-left {
+            align-self: flex-start;
+            background-color: var(--bubble-left);
+            border-top-left-radius: 0;
+        }
+
+        .message-right {
+            align-self: flex-end;
+            background-color: var(--bubble-right);
+            border-top-right-radius: 0;
+        }
+
+        .sender-name {
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .sender-anna { color: #e52e71; }
+        .sender-maxim { color: #075e54; }
+
+        /* Dropdowns im Text */
+        select.chat-select {
+            border: none;
+            border-bottom: 2px solid #999;
+            background-color: transparent;
+            font-family: inherit;
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #000;
+            padding: 0 5px;
+            cursor: pointer;
+            margin: 0 2px;
+            max-width: 140px;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        select.chat-select:focus {
+            outline: none;
+            border-bottom-color: var(--primary-color);
+        }
+
+        /* Feedback States */
+        select.chat-select.correct {
+            border-bottom: 2px solid var(--success-color);
+            background-color: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+        }
+
+        select.chat-select.incorrect {
+            border-bottom: 2px solid var(--error-color);
+            background-color: rgba(192, 57, 43, 0.1);
+            color: var(--error-color);
+        }
+
+        /* --- FOOTER / CONTROLS --- */
+        .chat-footer {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-top: 1px solid #ccc;
+            flex-shrink: 0;
+        }
+
+        .feedback-msg {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            min-height: 20px;
+            font-size: 0.9em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: white;
+            flex: 1;
+            transition: opacity 0.2s;
+        }
+
+        .btn-check { background-color: var(--primary-color); }
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: #f39c12; }
+        button:hover { opacity: 0.9; }
+
+        /* RESPONSIVE */
+        @media (max-width: 480px) {
+            body { padding: 0; }
+            .container { height: 100vh; max-height: none; border-radius: 0; }
+            .message { max-width: 95%; }
+            select.chat-select { font-size: 1em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="chat-header">
+        <div class="header-info">
+            <h2>Lern-Chat 🇷🇺</h2>
+            <p>Anna, Maxim</p>
+        </div>
+    </div>
+
+    <div class="chat-area">
+        
+        <!-- Nachricht 1: Anna -->
+        <div class="message message-left">
+            <span class="sender-name sender-anna">Anna</span>
+            Привет, Максим! 👋 Давно не виделись. Где ты сейчас
+            <select class="chat-select" id="sel-0">
+                <option value="">...</option>
+                <option value="учишься">учишься</option>
+                <option value="изучаешь">изучаешь</option>
+                <option value="занимаешься">занимаешься</option>
+            </select>?
+        </div>
+
+        <!-- Nachricht 2: Maxim -->
+        <div class="message message-right">
+            <span class="sender-name sender-maxim">Maxim</span>
+            Привет! Я
+            <select class="chat-select" id="sel-1">
+                <option value="">...</option>
+                <option value="учу">учу</option>
+                <option value="учусь">учусь</option>
+                <option value="занимаюсь">занимаюсь</option>
+            </select>
+            в МГУ. А ты?
+        </div>
+
+        <!-- Nachricht 3: Anna -->
+        <div class="message message-left">
+            <span class="sender-name sender-anna">Anna</span>
+            Круто! А я 
+            <select class="chat-select" id="sel-2">
+                <option value="">...</option>
+                <option value="учусь">учусь</option>
+                <option value="изучаю">изучаю</option>
+                <option value="учу">учу</option>
+            </select>
+            в консерватории. 🎹
+        </div>
+
+        <!-- Nachricht 4: Maxim -->
+        <div class="message message-right">
+            <span class="sender-name sender-maxim">Maxim</span>
+            Здорово! А чем ты сейчас
+            <select class="chat-select" id="sel-3">
+                <option value="">...</option>
+                <option value="учишься">учишься</option>
+                <option value="изучаешь">изучаешь</option>
+                <option value="занимаешься">занимаешься</option>
+            </select>?
+            (was machst du gerade?)
+        </div>
+
+        <!-- Nachricht 5: Anna -->
+        <div class="message message-left">
+            <span class="sender-name sender-anna">Anna</span>
+            Я
+            <select class="chat-select" id="sel-4">
+                <option value="">...</option>
+                <option value="учу">учу</option>
+                <option value="учусь">учусь</option>
+                <option value="занимаюсь">занимаюсь</option>
+            </select>
+            новую песню. Завтра экзамен! 😅 <br>
+            А что ты
+            <select class="chat-select" id="sel-5">
+                <option value="">...</option>
+                <option value="учишь">учишь</option>
+                <option value="учишься">учишься</option>
+                <option value="изучаешь">изучаешь</option>
+            </select>
+            в университете? (dein Fach)
+        </div>
+
+        <!-- Nachricht 6: Maxim -->
+        <div class="message message-right">
+            <span class="sender-name sender-maxim">Maxim</span>
+            Я
+            <select class="chat-select" id="sel-6">
+                <option value="">...</option>
+                <option value="учу">учу</option>
+                <option value="учусь">учусь</option>
+                <option value="изучаю">изучаю</option>
+            </select>
+            биологию и химию. 🧬 Это трудно, но интересно.
+        </div>
+
+        <!-- Nachricht 7: Anna (NEU) -->
+        <div class="message message-left">
+            <span class="sender-name sender-anna">Anna</span>
+            Ты молодец! Слушай, а ты
+            <select class="chat-select" id="sel-7">
+                <option value="">...</option>
+                <option value="учишься">учишься</option>
+                <option value="изучаешь">изучаешь</option>
+                <option value="занимаешься">занимаешься</option>
+            </select>
+            спортом? ⚽
+        </div>
+
+        <!-- Nachricht 8: Maxim (NEU) -->
+        <div class="message message-right">
+            <span class="sender-name sender-maxim">Maxim</span>
+            Редко. Сейчас мне нужно
+            <select class="chat-select" id="sel-8">
+                <option value="">...</option>
+                <option value="учить">учить</option>
+                <option value="учиться">учиться</option>
+                <option value="изучать">изучать</option>
+            </select>
+            сложные термины. 📚
+        </div>
+
+    </div>
+
+    <div class="chat-footer">
+        <div class="feedback-msg" id="global-feedback">Wähle die Verben für den Chat.</div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkAll()">Senden (Prüfen)</button>
+            <button class="btn-reset" onclick="resetAll()">Löschen</button>
+            <button class="btn-solve" onclick="solveAll()">Lösung</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DATEN: Die richtigen Antworten
+    const correctAnswers = [
+        "учишься",      // 0: Wo studierst du?
+        "учусь",        // 1: Ich studiere an der MGU
+        "учусь",        // 2: Ich studiere am Konservatorium
+        "занимаешься",  // 3: Womit beschäftigst du dich?
+        "учу",          // 4: Ich lerne ein Lied (auswendig)
+        "изучаешь",     // 5: Was ist dein Fach?
+        "изучаю",       // 6: Ich studiere Bio/Chemie
+        "занимаешься",  // 7: Treibst du Sport?
+        "учить"         // 8: Ich muss Termini lernen (Infinitiv, konkret)
+    ];
+
+    /* LOGIK */
+
+    function checkAll() {
+        let correctCount = 0;
+        let allSelected = true;
+
+        correctAnswers.forEach((ans, index) => {
+            const sel = document.getElementById(`sel-${index}`);
+            const val = sel.value;
+
+            if (val === "") {
+                allSelected = false;
+                sel.classList.remove('correct', 'incorrect');
+                return;
+            }
+
+            if (val === ans) {
+                sel.classList.add('correct');
+                sel.classList.remove('incorrect');
+                correctCount++;
+            } else {
+                sel.classList.add('incorrect');
+                sel.classList.remove('correct');
+            }
+        });
+
+        const feedback = document.getElementById('global-feedback');
+        
+        if (!allSelected) {
+            feedback.textContent = "Bitte füllen Sie alle Lücken im Chat aus.";
+            feedback.style.color = "var(--secondary-color)";
+        } else if (correctCount === correctAnswers.length) {
+            feedback.textContent = "Perfekt! Der Chat macht Sinn.";
+            feedback.style.color = "var(--success-color)";
+        } else {
+            feedback.textContent = `Du hast ${correctCount} von ${correctAnswers.length} Lücken richtig gefüllt.`;
+            feedback.style.color = "var(--error-color)";
+        }
+    }
+
+    function resetAll() {
+        correctAnswers.forEach((_, index) => {
+            const sel = document.getElementById(`sel-${index}`);
+            sel.value = "";
+            sel.classList.remove('correct', 'incorrect');
+        });
+        const feedback = document.getElementById('global-feedback');
+        feedback.textContent = "Wähle die Verben für den Chat.";
+        feedback.style.color = "var(--secondary-color)";
+    }
+
+    function solveAll() {
+        correctAnswers.forEach((ans, index) => {
+            const sel = document.getElementById(`sel-${index}`);
+            sel.value = ans;
+            sel.classList.remove('incorrect');
+            sel.classList.add('correct');
+        });
+        
+        const feedback = document.getElementById('global-feedback');
+        feedback.textContent = "Lösung angezeigt.";
+        feedback.style.color = "var(--primary-color)";
+    }
+
+</script>
+
+</body>
+</html>
